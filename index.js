@@ -96,7 +96,7 @@ async function checkUpdate(allowUpdate) {
         if (allowUpdate) {
             log('Update', 'AllowUpdate is enabled, updating...', 'warn');
             var { execSync } = require('child_process');
-            execSync('npm install github:hoahenry/meta-api --save');
+            execSync('npm install @hoahenry/meta-api --save');
         }
     }
 }
