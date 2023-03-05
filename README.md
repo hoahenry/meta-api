@@ -27,10 +27,7 @@
 ```
 - After editing, run: `npm install`
 #### 2. Use `npm`
-- At command line, enter:
-```sh
-npm install github:hoahenry/meta-api
-```
+- At command line, enter: `npm install github:hoahenry/meta-api` or `npm i @hoahenry/meta-api`
 #### 3. Update
 - Use built-in function: `checkUpdate(allowUpdate)`
 - If `allowUpdate` is `true`, it will automatically update if a new version is available.
