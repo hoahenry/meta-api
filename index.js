@@ -73,7 +73,7 @@ async function login(loginData, callback) {
 
     let requestDefaults = makeDefaults(response.body);
     let apiName = readdirSync(__dirname + '/api/'), api = new Object();
-    for (let name of apiName) api[name.replace(/.js/g, '')] = require(__dirname + '/api/' + name) ({ requestDefaults, Cli, api, globalOptions, utils, log });
+    for (let name of apiName) api[name.replace(/.js/g, '')] = require(__dirname + '/api/' + name) ({ requestDefaults, jar, Cli, api, globalOptions, utils, log });
 
     return callback(null, api);
 }
