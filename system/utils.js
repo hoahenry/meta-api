@@ -631,6 +631,7 @@ module.exports = function({ Cli, globalOptions, log }) {
         getGUID,
         formatID,
         padZeros,
+        formatCookie,
         makeParsable,
         makeCallback,
         getSignatureID,

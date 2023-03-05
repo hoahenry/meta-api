@@ -19,7 +19,7 @@
     ...,
     "dependencies": {
         ...,
-        "meta-api": "github:hoahenry/meta-api",
+        "@hoahenry/meta-api": "",
         ...
     },
     ...
@@ -27,7 +27,7 @@
 ```
 - After editing, run: `npm install`
 #### 2. Use `npm`
-- At command line, enter: `npm install github:hoahenry/meta-api` or `npm i @hoahenry/meta-api`
+- At command line, enter: `npm i @hoahenry/meta-api`
 #### 3. Update
 - Use built-in function: `checkUpdate(allowUpdate)`
 - If `allowUpdate` is `true`, it will automatically update if a new version is available.
@@ -35,7 +35,7 @@
 ### Use
 - Before logging in, I recommend using the `setOptions(options)` function to edit some of the properties available in the API:
 ```sh
-var { setOptions } = require('meta-api');
+var { setOptions } = require('@hoahenry/meta-api');
 setOptions({
     // These are the accepted properties in setOptions
     selfListen: false,
@@ -56,7 +56,7 @@ setOptions({
 - You can use function `login(loginData, callback)`.
 - Login with Cookies:
 ```sh
-var { login } = require('meta-api');
+var { login } = require('@hoahenry/meta-api');
 var { readFileSync } = require('fs');
 var cookies = JSON.parse(readFileSync('path_to_cookies.json'));
 
@@ -69,7 +69,7 @@ login({ cookies: cookies }, async function(error, api) {
 
 - Login with your account and password:
 ```sh
-var { login } = require('meta-api');
+var { login } = require('@hoahenry/meta-api');
 
 login({ email: 'your_email_or_facebook_id', password: 'your_password' }, async function (error, api) {
     if (error) console.log(error);
@@ -79,7 +79,7 @@ login({ email: 'your_email_or_facebook_id', password: 'your_password' }, async f
 ```
 - Or use both methods:
 ```sh
-var { login } = require('meta-api');
+var { login } = require('@hoahenry/meta-api');
 var { readFileSync } = require('fs');
 var cookies = JSON.parse(readFileSync('path_to_cookies.json'));
 
