@@ -19,10 +19,10 @@ var globalOptions = {
 var Cli = {
     clientID: (Math.random() * 2147483648 | 0).toString(16)
 };
+var utils = require('./system/utils') ({ Cli, globalOptions, log });
+var requestMaker = require('./system/requestMaker') ({ Cli, globalOptions, log, utils });
 
 async function login(loginData, callback) {
-    var utils = require('./system/utils') ({ Cli, globalOptions, log });
-    var requestMaker = require('./system/requestMaker') ({ Cli, globalOptions, log, utils });
     var { cookies, email, password } = loginData, response;
     var { get, post, makeDefaults, jar } = requestMaker;
     var { getFrom, makeCallback } = utils;
@@ -89,14 +89,14 @@ function setOptions(options) {
 async function checkUpdate(allowUpdate) {
     var { version } = require('./package.json');
     var { lt: versionChecker } = require('semver');
-    var { body } = utils.get('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
+    var { body } = await requestMaker.get('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
     var { version: newestVersion } = JSON.parse(body);
     if (versionChecker(version, newestVersion)) {
         log('Update', 'There is a newer version of Meta-API available', 'warn');
         if (allowUpdate) {
             log('Update', 'AllowUpdate is enabled, updating...', 'warn');
             var { execSync } = require('child_process');
-            execSync('npm install github:hoahenry/meta-api');
+            execSync('npm install github:hoahenry/meta-api --save');
         }
     }
 }
