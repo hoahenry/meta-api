@@ -19,12 +19,12 @@ var globalOptions = {
 var Cli = {
     clientID: (Math.random() * 2147483648 | 0).toString(16)
 };
-var utils = require('./system/utils') ({ Cli, globalOptions, log });
-var request = require('./system/requestMaker') ({ Cli, globalOptions, log, utils });
 
 async function login(loginData, callback) {
+    var utils = require('./system/utils') ({ Cli, globalOptions, log });
+    var requestMaker = require('./system/requestMaker') ({ Cli, globalOptions, log, utils });
     var { cookies, email, password } = loginData, response;
-    var { get, post, makeDefaults, jar } = request;
+    var { get, post, makeDefaults, jar } = requestMaker;
     var { getFrom, makeCallback } = utils;
     
     if (!callback) callback = makeCallback();
@@ -71,9 +71,9 @@ async function login(loginData, callback) {
     Cli.userID = cookie[0].cookieString().split("=")[1].toString();
     log('LOGIN', 'Logged in with userID: ' + Cli.userID, 'magenta');
 
-    let defaults = makeDefaults(response.body);
+    let requestDefaults = makeDefaults(response.body);
     let apiName = readdirSync(__dirname + '/api/'), api = new Object();
-    for (let name of apiName) api[name.replace(/.js/g, '')] = require(__dirname + '/api/' + name) ({ defaults, Cli, jar, api, globalOptions, utils, log });
+    for (let name of apiName) api[name.replace(/.js/g, '')] = require(__dirname + '/api/' + name) ({ requestDefaults, Cli, api, globalOptions, utils, log });
 
     return callback(null, api);
 }
