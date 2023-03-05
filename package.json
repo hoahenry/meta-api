@@ -11,12 +11,30 @@
     "url": "git+https://github.com/hoahenry/meta-api.git"
   },
   "keywords": [
-    "Meta"
+    "API",
+    "BOT",
+    "Meta",
+    "Facebook",
+    "Chat Bot",
+    "Mesenger",
+    "Henry",
+    "Facebook API",
+    "facebook-chat-api"
   ],
   "author": "Henry",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/hoahenry/meta-api/issues"
   },
-  "homepage": "https://github.com/hoahenry/meta-api#readme"
+  "homepage": "https://github.com/hoahenry/meta-api#readme",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "cheerio": "^1.0.0-rc.12",
+    "moment-timezone": "^0.5.41",
+    "mqtt": "^4.3.7",
+    "readline-sync": "^1.4.10",
+    "request": "^2.88.2",
+    "semver": "^7.3.8",
+    "websocket-stream": "^5.5.2"
+  }
 }

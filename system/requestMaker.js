@@ -86,7 +86,7 @@ module.exports = function({ Cli, globalOptions, log, utils }) {
 
     function parseAndCheckLogin(defaults, retryCount = 0) {
         return async function(data) {
-            _bluebird.try(async function() {
+            return _bluebird.try(async function() {
                 if (data.statusCode >= 500 && data.statusCode < 600) {
                     retryCount++;
                     if (retryCount === 5) return log('Parse And Check Login', `Got status code: ${response.statusCode}. Bailing out of trying to parse response.`, 'error');

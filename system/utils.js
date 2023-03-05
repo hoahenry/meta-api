@@ -1,6 +1,7 @@
 module.exports = function({ Cli, globalOptions, log }) {
     Function.isFunction = function(v) {
-        return Object.prototype.toString.call(v).slice(8, -1) === 'Function';
+        var type = Object.prototype.toString.call(v).slice(8, -1);
+        return type === 'Function' || type === 'AsyncFunction';
     }
     Number.isNumber = function(n) {
         return Object.prototype.toString.call(n).slice(8, -1) === 'Number';
@@ -8,9 +9,15 @@ module.exports = function({ Cli, globalOptions, log }) {
     Object.isObject = function(o) {
         return Object.prototype.toString.call(o).slice(8, -1) === 'Object';
     }
+    String.isString = function(s) {
+        return Object.prototype.toString.call(o).slice(8, -1) === 'String';
+    }
+    Boolean.isBoolean = function(b) {
+        return Object.prototype.toString.call(o).slice(8, -1) === 'Boolean';
+    }
 
-    function is(...type) {
-        return type.includes(Object.prototype.toString.call(obj).slice(8, -1));
+    function includes(data, ...type) {
+        return type.includes(Object.prototype.toString.call(data).slice(8, -1));
     }
 
     function getType(obj) {
@@ -617,7 +624,7 @@ module.exports = function({ Cli, globalOptions, log }) {
     }
 
     return {
-        is,
+        includes,
         getType,
         getFrom,
         getTime,
