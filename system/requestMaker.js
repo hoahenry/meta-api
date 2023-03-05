@@ -126,7 +126,7 @@ module.exports = function({ Cli, globalOptions, log, utils }) {
                         });
                     }
                     return res;
-                } catch {
+                } catch (error) {
                     return log('Parse And Check Login', `Got an error. Bailing out of trying to parse response.`, 'error');
                 }
             })

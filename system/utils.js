@@ -10,10 +10,10 @@ module.exports = function({ Cli, globalOptions, log }) {
         return Object.prototype.toString.call(o).slice(8, -1) === 'Object';
     }
     String.isString = function(s) {
-        return Object.prototype.toString.call(o).slice(8, -1) === 'String';
+        return Object.prototype.toString.call(s).slice(8, -1) === 'String';
     }
     Boolean.isBoolean = function(b) {
-        return Object.prototype.toString.call(o).slice(8, -1) === 'Boolean';
+        return Object.prototype.toString.call(b).slice(8, -1) === 'Boolean';
     }
 
     function includes(data, ...type) {
@@ -631,6 +631,7 @@ module.exports = function({ Cli, globalOptions, log }) {
         getGUID,
         formatID,
         padZeros,
+        makeParsable,
         makeCallback,
         getSignatureID,
         binaryToDecimal,
