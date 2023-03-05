@@ -65,7 +65,6 @@ async function login(loginData, callback) {
     if (strMQTT) Cli.MQTT = strMQTT[1];
     if (strIrisSeqID) Cli.irisSeqID = strIrisSeqID[1];
     if (Cli.MQTT || Cli.MQTTPolling) Cli.region = Cli.MQTT ? Cli.MQTT.replace(/(.+)region=/g, '') : Cli.MQTTPolling.replace(/(.+)region=/g, '');
-    console.log(Cli)
 
     var cookie = jar.getCookies('https://www.facebook.com').filter(item => item.cookieString().split('=')[0] === 'c_user');
     if (cookie.length == 0) return callback('Error retrieving user ID, login your account with browser to check and try again.', null);
