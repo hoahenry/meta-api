@@ -23,7 +23,7 @@ var utils = require('./system/utils') ({ Cli, globalOptions, log });
 var requestMaker = require('./system/requestMaker') ({ Cli, globalOptions, log, utils });
 
 async function login(loginData, callback) {
-    var { cookies, email, password } = loginData, response;
+    var { cookies, email, password } = loginData;
     var { get, post, makeDefaults, jar } = requestMaker;
     var { getFrom, makeCallback } = utils;
     
@@ -36,8 +36,8 @@ async function login(loginData, callback) {
         }
         response = await get('https://m.facebook.com');
     } else {
-        if (!email) email = _emailHandle();
-        if (!password) password = _passwordHandle();
+        if (!email) email = _readLine('\x1b[33mPlease enter your email or Facebook ID: \x1b[0m');
+        if (!password) password = _readLine('\x1b[33mPlease enter your password: \x1b[0m');
         log('Login', 'Logging in with email and password...', 'magenta');
 
         var { body, headers } = await get('https://m.facebook.com/login');
@@ -57,8 +57,28 @@ async function login(loginData, callback) {
 
         var { headers } = await post('https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&lwv=110', formData);
         if (!headers.location) return callback('Wrong email or password', null);
-        response = await get('https://m.facebook.com');
+        if (headers.location.includes('/checkpoint/?next')) {
+            var { body } = await get(headers.location);
+            var $ = cheerio.load(body), arrayForm = [], formData = {};
+            $('form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
+            for (let i of arrayForm) if (i.value) formData[i.name] = i.value;
+            formData.approvals_code = _readLine('\x1b[33mPlease enter your approvals code or leave it blank if verified with another browser: \x1b[0m', true);
+            formData['submit[Continue]'] = $("#checkpointSubmitButton").html();
+            if (formData.approvals_code) {
+                var { headers, body } = await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData);
+                var $ = cheerio.load(body);
+                var error = $("#approvals_code").parent().attr("data-xui-error");
+                if (error) return callback('Login with email and password failed. Incorrect approvals code', null);
+                delete formData.approvals_code;
+                formData.name_action_selected = 'dont_save';
+                await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData);
+            } else {
+                log('Login', 'Verified from browser, continuing to login...', 'magenta');
+                await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData, { Referer: headers.location });
+            }
+        }
     }
+    var response = await get('https://m.facebook.com');
     var strAppID = response.body.match(/appID:\s*?(\d*)/), strMQTT = response.body.match(/endpoint:\s*?"(.+?)"/), strMQTTPolling = response.body.match(/pollingEndpoint:\s*?"(.+?)"/), strIrisSeqID = response.body.match(/irisSeqID:\s*?"(.+?)"/);
     if (strAppID) Cli.appID = strAppID[1];
     if (strMQTTPolling) Cli.MQTTPolling = strMQTTPolling[1];
@@ -69,7 +89,7 @@ async function login(loginData, callback) {
     var cookie = jar.getCookies('https://www.facebook.com').filter(item => item.cookieString().split('=')[0] === 'c_user');
     if (cookie.length == 0) return callback('Error retrieving user ID, login your account with browser to check and try again.', null);
     Cli.userID = cookie[0].cookieString().split("=")[1].toString();
-    log('LOGIN', 'Logged in with userID: ' + Cli.userID, 'magenta');
+    log('Login', 'Logged in with userID: ' + Cli.userID, 'magenta');
 
     let requestDefaults = makeDefaults(response.body);
     let apiName = readdirSync(__dirname + '/api/'), api = new Object();
@@ -101,18 +121,9 @@ async function checkUpdate(allowUpdate) {
     }
 }
 
-function _emailHandle() {
-    let email = reader.question("Please enter your email or Facebook ID: ");
-    process.stdout.write("\u001b[0J\u001b[1J\u001b[2J\u001b[0;0H\u001b[0;0W");
-    if (email.length > 0) return email;
-    else return _emailHandle();
-}
-
-function _passwordHandle() {
-    let password = reader.question('Please enter your password: ');
-    process.stdout.write("\u001b[0J\u001b[1J\u001b[2J\u001b[0;0H\u001b[0;0W");
-    if (password.length > 0) return password;
-    else return _passwordHandle();
+function _readLine(question, nullAnswer) {
+    let answer = reader.question(question);
+    return !nullAnswer ? answer.length > 0 ? answer : _readLine(question, nullAnswer) : answer;
 }
 
 module.exports = {
