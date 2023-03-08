@@ -18,9 +18,7 @@ module.exports = function({ requestDefaults, api, Cli, utils, log, globalOptions
     };
     
     async function getSeqID(callback) {
-        Cli.t_mqttCalled = false;
         var response = await requestDefaults.post('https://www.facebook.com/api/graphqlbatch/', form);
-
         if (!Array.isArray(response)) return log('LSITENER', 'Not Logged in.', 'error');
         Cli.irisSeqID = response[0].o0.data.viewer.message_threads.sync_sequence_id;
         if (callback) callback();
@@ -387,36 +385,26 @@ module.exports = function({ requestDefaults, api, Cli, utils, log, globalOptions
 
             mqttClient.on('error', function (error) {
                 if (globalOptions.autoReconnect) getSeqID(function() {
-                    log('LISTENER', 'Got an error, starting reconnect...', 'warn');
-                    listen(callback);
+                    log('LISTENER', 'Got an error. AutoReconnect is enable, starting reconnect...', 'warn');
+                    return listen(callback);
                 });
                 callback(error, null);
             });
 
             mqttClient.on('connect', function () {
-                for (let i of topics) mqttClient.subscribe(i);
+                topics.forEach(topic => mqttClient.subscribe(topic));
                 var queue = {
                     sync_api_version: 10,
                     max_deltas_able_to_process: 1000,
                     delta_batch_size: 500,
                     encoding: "JSON",
-                    entity_fbid: Cli.userID
+                    entity_fbid: Cli.userID,
+                    initial_titan_sequence_id: Cli.irisSeqID,
+                    device_params: null
                 };
 
-                if (Cli.syncToken) {
-                    var topic = "/messenger_sync_get_diffs";
-                    queue.last_seq_id = Cli.irisSeqID;
-                    queue.sync_token = Cli.syncToken;
-                } else {
-                    var topic = "/messenger_sync_create_queue";
-                    queue.initial_titan_sequence_id = Cli.irisSeqID;
-                    queue.device_params = null;
-                }
-
-                mqttClient.publish(topic, JSON.stringify(queue), { qos: 1, retain: false });
-
+                mqttClient.publish('/messenger_sync_create_queue', JSON.stringify(queue), { qos: 1, retain: false });
                 mqttClient.publish("/foreground_state", JSON.stringify({ foreground: globalOptions.onlineStatus }), { qos: 1 });
-
                 mqttClient.publish("/set_client_settings", JSON.stringify({ make_user_available_when_in_foreground: true }), { qos: 1 });
 
                 var rTimeout = setTimeout(function () {
@@ -429,11 +417,13 @@ module.exports = function({ requestDefaults, api, Cli, utils, log, globalOptions
                     if (globalOptions.emitReady) log('LISTENER', 'Listener is enable.', 'warn');
                     delete Cli.tmsWait;
                     api.stopListener = function() {
+                        mqttClient.unsubscribe("/webrtc");
+                        mqttClient.unsubscribe("/rtc_multi");
+                        mqttClient.unsubscribe("/onevc");
                         mqttClient.publish("/browser_close", "{}");
                         mqttClient.end();
                         delete api.mqttClient;
                         delete api.stopListener;
-                        return log('LISTENER', 'Listener is disable.', 'warn');
                     }
                 };
             });
@@ -457,17 +447,17 @@ module.exports = function({ requestDefaults, api, Cli, utils, log, globalOptions
                         })
                     }
                     if (topic == "/t_ms") {
-                        if (Cli.tmsWait && typeof Cli.tmsWait == 'function') Cli.tmsWait();
+                        if (Cli.tmsWait && Function.isFunction(Cli.tmsWait)) Cli.tmsWait();
                         for (var i in jsonMessage.deltas) parseDelta(callback, jsonMessage.deltas[i]);
                     }
-                    if ((topic === "/thread_typing" || topic === "/orca_typing_notifications") && globalOptions.listenTyping) {
+                    if (['/thread_typing', '/orca_typing_notifications'].includes(topic) && globalOptions.listenTyping) {
                         var typ = {
                             type: "typ",
                             isTyping: !!jsonMessage.state,
                             from: jsonMessage.sender_fbid.toString(),
                             threadID: formatID((jsonMessage.thread || jsonMessage.sender_fbid).toString())
                         };
-                        callback(null, typ)
+                        callback(null, typ);
                     }
                     if (topic === "/orca_presence" && globalOptions.updatePresence) {
                         for (let i of jsonMessage.list) {
@@ -476,7 +466,7 @@ module.exports = function({ requestDefaults, api, Cli, utils, log, globalOptions
                                 userID: i['u'].toString(),
                                 timestamp: i['l'] * 1000,
                                 statuses: i['p']
-                            })
+                            });
                         }
                     }
                 } catch (error) {
@@ -485,7 +475,12 @@ module.exports = function({ requestDefaults, api, Cli, utils, log, globalOptions
             });
 
             mqttClient.on('close', function () {
-                if (globalOptions.emitReady) return log('LISTENER', 'Listener is disable.', 'warn');
+                mqttClient.removeAllListeners();
+                if (globalOptions.emitReady) log('LISTENER', 'Listener is close.', 'warn');
+                if (globalOptions.autoReconnect) getSeqID(function() {
+                    log('LISTENER', 'AutoReconnect is enable, starting reconnect...', 'warn');
+                    return listen(callback);
+                });
             });
         } catch (error) {
             return callback(error, null);
