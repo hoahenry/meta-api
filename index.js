@@ -75,7 +75,7 @@ async function login(loginData, callback) {
         }
     }
     var { body } = await get('https://m.facebook.com');
-    var strAppID = response.body.match(/appID:\s*?(\d*)/), strMQTT = response.body.match(/endpoint:\s*?"(.+?)"/), strMQTTPolling = response.body.match(/pollingEndpoint:\s*?"(.+?)"/), strIrisSeqID = response.body.match(/irisSeqID:\s*?"(.+?)"/);
+    var strAppID = body.match(/appID:\s*?(\d*)/), strMQTT = body.match(/endpoint:\s*?"(.+?)"/), strMQTTPolling = body.match(/pollingEndpoint:\s*?"(.+?)"/), strIrisSeqID = body.match(/irisSeqID:\s*?"(.+?)"/);
     if (strAppID) Cli.appID = strAppID[1];
     if (strMQTTPolling) Cli.MQTTPolling = strMQTTPolling[1];
     if (strMQTT) Cli.MQTT = strMQTT[1];
@@ -87,7 +87,7 @@ async function login(loginData, callback) {
     Cli.userID = cookie[0].cookieString().split("=")[1].toString();
     log('Login', 'Logged in with userID: ' + Cli.userID, 'magenta');
 
-    let requestDefaults = makeDefaults(response.body);
+    let requestDefaults = makeDefaults(body);
     let apiName = readdirSync(__dirname + '/api/'), api = new Object();
     for (let name of apiName) api[name.replace(/.js/g, '')] = require(__dirname + '/api/' + name) ({ requestDefaults, jar, Cli, api, globalOptions, utils, log });
 
