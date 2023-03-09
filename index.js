@@ -34,7 +34,6 @@ async function login(loginData, callback) {
             let cookie = (i.key || i.name) + "=" + i.value + "; expires=" + i.expires + "; domain=" + i.domain + "; path=" + i.path + ";";
             jar.setCookie(cookie, 'https://' + i.domain);
         }
-        response = await get('https://m.facebook.com');
     } else {
         log('Login', 'Logging in with email and password...', 'magenta');
         var { body, headers } = await get('https://m.facebook.com/login');
@@ -75,7 +74,7 @@ async function login(loginData, callback) {
             }
         }
     }
-    var response = await get('https://m.facebook.com');
+    var { body } = await get('https://m.facebook.com');
     var strAppID = response.body.match(/appID:\s*?(\d*)/), strMQTT = response.body.match(/endpoint:\s*?"(.+?)"/), strMQTTPolling = response.body.match(/pollingEndpoint:\s*?"(.+?)"/), strIrisSeqID = response.body.match(/irisSeqID:\s*?"(.+?)"/);
     if (strAppID) Cli.appID = strAppID[1];
     if (strMQTTPolling) Cli.MQTTPolling = strMQTTPolling[1];
