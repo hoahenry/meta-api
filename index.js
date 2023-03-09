@@ -1,6 +1,6 @@
 var log = require('./system/log');
 var cheerio = require('cheerio');
-var reader = require('readline-sync');
+var reader = require('prompt-sync')();;
 var { readdirSync } = require('fs');
 
 var globalOptions = {
@@ -122,7 +122,7 @@ async function checkUpdate(allowUpdate) {
 }
 
 function _readLine(question, nullAnswer) {
-    let answer = reader.question(question);
+    let answer = reader(question);
     return !nullAnswer ? answer.length > 0 ? answer : _readLine(question, nullAnswer) : answer;
 }
 
