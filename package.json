@@ -1,6 +1,6 @@
 {
   "name": "@hoahenry/meta-api",
-  "version": "1.2.9",
+  "version": "1.2.10",
   "description": "Meta API",
   "main": "index.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "cheerio": "^1.0.0-rc.12",
     "moment-timezone": "^0.5.41",
     "mqtt": "^4.3.7",
-    "prompt-sync": "^4.2.0",
+    "readline-sync": "^1.4.10",
     "request": "^2.88.2",
     "semver": "^7.3.8",
     "websocket-stream": "^5.5.2"

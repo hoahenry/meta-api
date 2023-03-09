@@ -1,6 +1,6 @@
 var log = require('./system/log');
 var cheerio = require('cheerio');
-var reader = require('prompt-sync')();;
+var reader = require('readline-sync');
 var { readdirSync } = require('fs');
 
 var globalOptions = {
@@ -36,10 +36,7 @@ async function login(loginData, callback) {
         }
         response = await get('https://m.facebook.com');
     } else {
-        if (!email) email = _readLine('\x1b[33mPlease enter your email or Facebook ID: \x1b[0m');
-        if (!password) password = _readLine('\x1b[33mPlease enter your password: \x1b[0m');
         log('Login', 'Logging in with email and password...', 'magenta');
-
         var { body, headers } = await get('https://m.facebook.com/login');
         var $ = cheerio.load(body), arrayForm = [], formData = {};
         $('#login_form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
@@ -47,8 +44,8 @@ async function login(loginData, callback) {
 
         formData.lsd = getFrom(body, "[\"LSD\",[],{\"token\":\"", "\"}");
         formData.lgndim = Buffer.from("{\"w\":1440,\"h\":900,\"aw\":1440,\"ah\":834,\"c\":24}").toString('base64');
-        formData.email = email;
-        formData.pass = password;
+        formData.email = email || _readLine('\x1b[33mPlease enter your email or Facebook ID: \x1b[0m');
+        formData.pass = password || _readLine('\x1b[33mPlease enter your password: \x1b[0m');
         formData.default_persistent = '0';
         formData.lgnrnd = getFrom(body, "name=\"lgnrnd\" value=\"", "\"");
         formData.locale = 'vi_VN';
@@ -62,8 +59,8 @@ async function login(loginData, callback) {
             var $ = cheerio.load(body), arrayForm = [], formData = {};
             $('form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
             for (let i of arrayForm) if (i.value) formData[i.name] = i.value;
-            formData.approvals_code = _readLine('\x1b[33mPlease enter your approvals code or leave it blank if verified with another browser: \x1b[0m', true);
             formData['submit[Continue]'] = $("#checkpointSubmitButton").html();
+            formData.approvals_code = _readLine('\x1b[33mPlease enter your approvals code or leave it blank if verified with another browser: \x1b[0m', true);
             if (formData.approvals_code) {
                 var { headers, body } = await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData);
                 var $ = cheerio.load(body);
@@ -122,7 +119,7 @@ async function checkUpdate(allowUpdate) {
 }
 
 function _readLine(question, nullAnswer) {
-    let answer = reader(question);
+    let answer = reader.question(question, { encoding: 'utf-8' });
     return !nullAnswer ? answer.length > 0 ? answer : _readLine(question, nullAnswer) : answer;
 }
 
