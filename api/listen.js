@@ -164,7 +164,7 @@ module.exports = function({ requestDefaults, api, Cli, utils, log, globalOptions
                                 var fetchData = response[0].o0.data.message;
                                 var mobj = {};
                                 for (var i in fetchData.message.ranges) {
-                                    mobj[fetchData.message.ranges[a].entity.id] = (fetchData.message.text || "").substr(fetchData.message.ranges[n].offset, fetchData.message.ranges[n].length);
+                                    mobj[fetchData.message.ranges[i].entity.id] = (fetchData.message.text || "").substr(fetchData.message.ranges[i].offset, fetchData.message.ranges[i].length);
                                 }
 
                                 callbackToReturn.messageReply = {
