@@ -32,9 +32,7 @@ module.exports = function({ requestDefaults, Cli, utils }) {
             log_message_type: "log:thread-name"
         };
         var response = await requestDefaults.post('https://www.facebook.com/messaging/set_thread_name/', form);
-        if (response.error === 1545012) return callback('Cannot change chat title. This user not is a members in the group', false);
-        if (response.error === 1545003) return callback('Cannot set title of single-user chat.', false);
-        if (response.error) return callback(response.error, false);
+        if (!response || response.error) return callback(response, false);
         return callback(null, true);
     }
 }

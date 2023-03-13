@@ -89,7 +89,10 @@ module.exports = function({ Cli, globalOptions, log, utils }) {
             return _bluebird.try(async function() {
                 if (data.statusCode >= 500 && data.statusCode < 600) {
                     retryCount++;
-                    if (retryCount === 5) return log('Parse And Check Login', `Got status code: ${response.statusCode}. Bailing out of trying to parse response.`, 'error');
+                    if (retryCount === 5) {
+                        console.log(data)
+                        return log('Parse And Check Login', `Got status code: ${data.statusCode}. Bailing out of trying to parse response.`, 'error');
+                    }
                     var retryTime = Math.floor(Math.random() * 5000);
                     var url = data.request.uri.protocol + "//" + data.request.uri.hostname + data.request.uri.pathname;
                     if (data.request.headers['Content-Type'].split(';')[0] === 'multipart/form-data') {
@@ -106,7 +109,10 @@ module.exports = function({ Cli, globalOptions, log, utils }) {
                         .then(parseAndCheckLogin(defaults, retryCount));
                     }
                 }
-                if (data.statusCode !== 200) return log('Parse And Check Login', `Got status code: ${response.statusCode}. Bailing out of trying to parse response.`, 'error');
+                if (data.statusCode !== 200) {
+                    console.log(data)
+                    return log('Parse And Check Login', `Got status code: ${data.statusCode}. Bailing out of trying to parse response.`, 'error');
+                }
                 try {
                     var res = JSON.parse(makeParsable(data.body));
                     if (res.error === 1357001) return log('Parse And Check Login', 'Not logged in.', 'error');

@@ -131,7 +131,7 @@ module.exports = function({ requestDefaults, utils }) {
         }
 
         var response = await requestDefaults.post('https://www.facebook.com/api/graphqlbatch/', form);
-        if (response.error) return callback('Can\'t get ThreadInfo', null);
+        if (!response || response.error) return callback(response, null);
         var threadInfo = {};
         for (let i = response.length - 2; i >= 0; i--) {
             var key = Object.keys(response[i])[0];

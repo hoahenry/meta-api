@@ -37,7 +37,7 @@ module.exports = function({ requestDefaults, Cli, utils, log }) {
             form["log_message_data[added_participants][" + i + "]"] = "fbid:" + userID[i];
         }
         var response = await requestDefaults.post('https://www.facebook.com/messaging/send/', form);
-        if (!response || response.error) return callback('ADD user to group failed.', false);
+        if (!response || response.error) return callback(response, null);
         return callback(null, true);
     }
 }

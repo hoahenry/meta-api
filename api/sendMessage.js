@@ -15,7 +15,7 @@ module.exports = function({ requestDefaults, Cli, utils, globalOptions }) {
 
             try {
                 var response = await requestDefaults.postFormData('https://upload.facebook.com/ajax/mercury/upload.php', form);
-                if (response.error) return callback(response.error);
+                if (!response || response.error) return callback(response);
                 uploads.push(response.payload.metadata[0]);
             } catch (error) {
                 callback(error, null)
@@ -49,8 +49,7 @@ module.exports = function({ requestDefaults, Cli, utils, globalOptions }) {
         }
         
         var response = await requestDefaults.post('https://www.facebook.com/messaging/send/', form);
-        if (!response) return callback('Send message failed', null);
-        if (response.error && response.error == 1545012) return callback('Got error 1545012 at line 55', null);
+        if (!response || response.error) return callback(response, null);
 
         try {
             var messageInfo = response.payload.actions.reduce((p, v) => {

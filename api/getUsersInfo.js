@@ -8,7 +8,7 @@ module.exports = function({ requestDefaults, utils }) {
             form['ids[' + i + ']'] = v;
         })
         var response = await requestDefaults.post('https://www.facebook.com/chat/user_info/', form);
-        if (!response || response.error) return callback('Can\'t get User Infomations');
+        if (!response || response.error) return callback(response, null);
         for (let prop in response.payload.profiles) {
             var innerObj = response.payload.profiles[prop];
             obj[prop] = {

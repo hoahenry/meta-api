@@ -12,7 +12,7 @@ module.exports = function({ requestDefaults, utils, Cli }) {
         }
 
         var response = await requestDefaults.get('https://www.facebook.com/ajax/typeahead/search.php', form);
-        if (!response || response.error) return callback(response.error);
+        if (!response || response.error) return callback(response, null);
         var data = response.payload.entries.map(function(data) {
             return {
                 userID: formatID(data.uid.toString()),

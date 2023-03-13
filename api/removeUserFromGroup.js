@@ -9,7 +9,7 @@ module.exports = function({ defaults, utils }) {
             tid: threadID
         }
         var response = await defaults.post('https://www.facebook.com/chat/remove_participants', form);
-        if (response.error) return callback(response.error, false);
+        if (!response || response.error) return callback(response, false);
         else return callback(null, true);
     }
 }

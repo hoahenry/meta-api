@@ -639,8 +639,7 @@ module.exports = function({ requestDefaults, globalOptions, utils, log }) {
 			})
         }
         var response = await requestDefaults.post('https://www.facebook.com/api/graphqlbatch/', form);
-        if (response[response.length - 1].error_result > 0)return callback('Can\'t get Message', null);
-        if (response[response.length - 1].successful_results > 0) return callback('There was no successful_results', null);
+        if (!response || response.error) return callback(response, null);
         var data = response[0].o0.data.message;
         if (data) return callback(null, formatMessage(threadID, data));
     }
