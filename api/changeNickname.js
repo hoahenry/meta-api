@@ -8,7 +8,7 @@ module.exports = function({ requestDefaults, utils, Cli }) {
             thread_or_other_fbid: threadID
         }
         var response = await requestDefaults.post('https://www.facebook.com/messaging/save_thread_nickname/?source=thread_settings&dpr=1', form);
-        if (!response || response.error) return callback(response, null);
-        return callback(null, true)
+        if (!response || response.error) return callback(response);
+        return callback(null);
     }
 }

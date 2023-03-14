@@ -1,8 +1,8 @@
 module.exports = function({ requestDefaults, Cli, utils }) {
     var { makeCallback, generateOfflineThreadingID, generateThreadingID, generateTimestampRelative, getType } = utils;
     return async function(newTitle, threadID, callback) {
-        if (!callback || Function.isFunction(threadID)) callback('Please pass a threadID as a second argument.');
-        if (!callback) callback = makeCallback();
+        if (!callback && Function.isFunction(threadID)) callback('Please pass a threadID as a second argument.');
+        if (!callback || !Function.isFunction(callback)) callback = makeCallback();
         var messageAndOTID = generateOfflineThreadingID();
         var form = {
             client: "mercury",
@@ -32,7 +32,7 @@ module.exports = function({ requestDefaults, Cli, utils }) {
             log_message_type: "log:thread-name"
         };
         var response = await requestDefaults.post('https://www.facebook.com/messaging/set_thread_name/', form);
-        if (!response || response.error) return callback(response, false);
-        return callback(null, true);
+        if (!response || response.error) return callback(response);
+        return callback(null);
     }
 }

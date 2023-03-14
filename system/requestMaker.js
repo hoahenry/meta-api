@@ -98,13 +98,13 @@ module.exports = function({ Cli, globalOptions, log, utils }) {
                     if (data.request.headers['Content-Type'].split(';')[0] === 'multipart/form-data') {
                         return _bluebird.delay(retryTime)
                         .then(function() {
-                            return defaults.postFormData(url, data.request.formData);
+                            return defaults._postFormData(url, data.request.formData);
                         })
                         .then(parseAndCheckLogin(defaults, retryCount))
                     } else {
                         return _bluebird.delay(retryTime)
                         .then(function() {
-                            return defaults.post(url, data.request.formData);
+                            return defaults._post(url, data.request.formData);
                         })
                         .then(parseAndCheckLogin(defaults, retryCount));
                     }

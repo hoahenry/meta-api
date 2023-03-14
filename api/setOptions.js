@@ -7,6 +7,6 @@ module.exports = function({ globalOptions, utils }) {
             if (!allowedProperties.includes(i)) return callback('Unrecognized option given to setOptions: ' + i, false);
             else globalOptions[i] = options[i];
         }
-        return callback(null, true);
+        return callback(null);
     }
 }

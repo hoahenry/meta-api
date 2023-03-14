@@ -1,4 +1,4 @@
-module.exports = function({ requestDefaults, Cli, utils, globalOptions }) {
+module.exports = function({ requestDefaults, Cli, utils }) {
     var bluebird = require('bluebird');
     var allowedProperties = ['attachments', 'url', 'sticker', 'emoji', 'emojiSize', 'body', 'mentions', 'location'];
     var { getType, generateOfflineThreadingID, generateTimestampRelative, generateThreadingID, getSignatureID } = utils;
@@ -124,18 +124,15 @@ module.exports = function({ requestDefaults, Cli, utils, globalOptions }) {
             form["tags[0]"] = "hot_emoji_size:" + message.emojiSize;
         }
         if (message.mentions) {
-            for (let i = 0; i < message.mentions.length; i++) {
-                let mention = message.mentions[i];
-                let tag = mention.tag;
-                if (typeof tag !== 'string') return callback('Mention tags must be strings', null);
-                let offset = message.body.indexOf(tag, mention.fromIndex || 0);
-                if (offset < 0) callback('Mention for ' + tag + 'not found in message');
-                if (!mention.id) callback('Mention ID should be non-null');
+            Object.keys(message.mentions).map((v, i) => {
+                if (!String.isString(v)) return callback('Mention tags must be strings', null);
+                let offset = message.body.indexOf(message.mentions[v]);
+                if (offset < 0) return callback('Mention for ' + tag + 'not found in message', null);
                 form["profile_xmd[" + i + "][offset]"] = offset;
-                form["profile_xmd[" + i + "][length]"] = tag.length;
-                form["profile_xmd[" + i + "][id]"] = mention.id || 0;
+                form["profile_xmd[" + i + "][length]"] = message.mentions[v].length;
+                form["profile_xmd[" + i + "][id]"] = v || 0;
                 form["profile_xmd[" + i + "][type]"] = "p";
-            }
+            })
         }
 
         async function handleAttachments(_callback) {

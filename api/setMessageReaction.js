@@ -18,7 +18,7 @@ module.exports = function({ requestDefaults, utils, Cli }) {
             dpr: 1
         }
         var response = await requestDefaults.postFormData('https://www.facebook.com/webgraphql/mutation/', {}, {}, qs);
-        if (!response || response.error) return callback(response, false);
-        else return callback(null, true);
+        if (!response || response.error) return callback(response);
+        return callback(null);
     }
 }

@@ -13,7 +13,7 @@ module.exports = function({ requestDefaults, utils, globalOptions }) {
             commerce_last_message_type: ''
         }
         var response = await requestDefaults.post('https://www.facebook.com/ajax/mercury/change_read_status.php', form);
-        if (!response || response.error) return callback(response, null);
-        return callback(null, true);
+        if (!response || response.error) return callback(response);
+        return callback(null);
     }
 }

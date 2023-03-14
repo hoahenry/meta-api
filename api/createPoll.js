@@ -13,7 +13,7 @@ module.exports = function({ requestDefaults, utils }) {
             form['option_is_selected_array[' + i + ']'] = options[properties[i]] ? '1' : '0';
         }
         var response = await requestDefaults.post('https://www.facebook.com/messaging/group_polling/create_poll/?dpr=1', form);
-        if (!response || response.error) return callback(response, null);
-        else return callback(null, true);
+        if (!response || response.error) return callback(response);
+        return callback(null);
     }
 }

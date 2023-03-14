@@ -642,5 +642,6 @@ module.exports = function({ requestDefaults, globalOptions, utils, log }) {
         if (!response || response.error) return callback(response, null);
         var data = response[0].o0.data.message;
         if (data) return callback(null, formatMessage(threadID, data));
+        return callback(response);
     }
 }

@@ -29,7 +29,7 @@ module.exports = function({ requestDefaults, utils, Cli }) {
             variables: JSON.stringify(data)
         }
         var response = await requestDefaults.post('https://www.facebook.com/api/graphql/', form);
-        if (!response || response.error) return callback(response, null);
-        else return callback(null, true);
+        if (!response || response.error) return callback(response);
+        return callback(null);
     }
 }
