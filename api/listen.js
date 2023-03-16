@@ -384,6 +384,7 @@ module.exports = function({ requestDefaults, api, Cli, utils, log, globalOptions
             var mqttClient = Cli.mqttClient;
 
             mqttClient.on('error', function (error) {
+                mqttClient.removeAllListeners();
                 if (globalOptions.autoReconnect) getSeqID(function() {
                     log('LISTENER', 'Got an error. AutoReconnect is enable, starting reconnect...', 'warn');
                     return listen(callback);

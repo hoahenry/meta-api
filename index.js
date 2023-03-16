@@ -68,9 +68,13 @@ async function login(loginData, callback) {
                 delete formData.approvals_code;
                 formData.name_action_selected = 'dont_save';
                 await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData);
+                // There are still some things I can't do here, such as: review recent logins, check checkpoints...
+                // If you get the same error, please push an issue to https://github.com/hoahenry/meta-api/issues
             } else {
                 log('Login', 'Verified from browser, continuing to login...', 'magenta');
                 await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData, { Referer: headers.location });
+                // There are still some things I can't do here, such as: review recent logins, check checkpoints...
+                // If you get the same error, please push an issue to https://github.com/hoahenry/meta-api/issues
             }
         }
     }
