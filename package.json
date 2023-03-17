@@ -1,6 +1,6 @@
 {
   "name": "@hoahenry/meta-api",
-  "version": "1.2.17",
+  "version": "1.2.18",
   "description": "Meta API",
   "main": "index.js",
   "scripts": {

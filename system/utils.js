@@ -547,6 +547,7 @@ module.exports = function({ Cli, globalOptions, log }) {
     }
 
     function isReadableStream(obj) {
+        var _stream = require('stream');
         return (obj instanceof _stream.Stream && (getType(obj._read) === 'Function' || getType(obj._read) == 'AsyncFunction') && getType(obj._readableState) == 'Object');
     }
 

@@ -18,7 +18,7 @@ module.exports = function({ requestDefaults, Cli, utils }) {
                 if (!response || response.error) return callback(response);
                 uploads.push(response.payload.metadata[0]);
             } catch (error) {
-                callback(error, null)
+                return callback(error, null)
             }
         }
 
@@ -136,7 +136,7 @@ module.exports = function({ requestDefaults, Cli, utils }) {
         }
 
         async function handleAttachments(_callback) {
-            if (!message.attachments) _callback();
+            if (!message.attachments) return _callback();
             else {
                 form["image_ids"] = [];
                 form["gif_ids"] = [];
@@ -144,15 +144,15 @@ module.exports = function({ requestDefaults, Cli, utils }) {
                 form["video_ids"] = [];
                 form["audio_ids"] = [];
                 if (utils.getType(message.attachments) !== "Array") message.attachments = [message.attachments];
-                uploadAttachment(message.attachments, (error, files) => {
+                return uploadAttachment(message.attachments, (error, files) => {
                     if (error) return callback(error, null);
                     else {
-                        files.forEach(function(file) {
+                        files.forEach(function(error, file) {
                             let key = Object.keys(file);
                             let type = key[0];
                             form["" + type + "s"].push(file[type])
                         })
-                        _callback();
+                        return _callback();
                     }
                 })
             }
@@ -161,7 +161,7 @@ module.exports = function({ requestDefaults, Cli, utils }) {
             if (!message.url) return _callback();
             else {
                 form["shareable_attachment[share_type]"] = "100";
-                getUrl(message.url, (error, params) => {
+                return getUrl(message.url, (error, params) => {
                     if (error) return callback(error, null);
                     else {
                         form["shareable_attachment[share_params]"] = params;
