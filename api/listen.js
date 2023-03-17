@@ -67,7 +67,7 @@ module.exports = function({ requestDefaults, api, Cli, utils, log, globalOptions
                                 messageID: delta.deltaRecallMessageData.messageID,
                                 senderID: delta.deltaRecallMessageData.senderID.toString(),
                                 deletionTimestamp: delta.deltaRecallMessageData.deletionTimestamp,
-                                timestamp: delta.deltaRecallMessageData.timestamp
+                                timestamp: delta.deltaRecallMessageData.messageTimestamp
                             })
                         }
                         if (delta.deltaMessageReply) {

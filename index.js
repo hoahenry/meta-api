@@ -123,6 +123,7 @@ async function checkUpdate(allowUpdate) {
 
 function _readLine(question, nullAnswer) {
     let answer = reader.question(question, { encoding: 'utf-8' });
+    process.stdout.write("\u001b[0J\u001b[1J\u001b[2J\u001b[0;0H\u001b[0;0W");
     return !nullAnswer ? answer.length > 0 ? answer : _readLine(question, nullAnswer) : answer;
 }
 
