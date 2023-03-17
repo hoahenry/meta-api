@@ -147,7 +147,7 @@ module.exports = function({ requestDefaults, Cli, utils }) {
                 return uploadAttachment(message.attachments, (error, files) => {
                     if (error) return callback(error, null);
                     else {
-                        files.forEach(function(error, file) {
+                        files.forEach(function(file) {
                             let key = Object.keys(file);
                             let type = key[0];
                             form["" + type + "s"].push(file[type])
