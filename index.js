@@ -53,8 +53,20 @@ async function login(loginData, callback) {
 
         var { headers } = await post('https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&lwv=110', formData);
         if (!headers.location) return callback('Wrong email or password', null);
+        var { body } = await get(headers.location);
+        if (headers.location.includes('/recover/initiate')) {
+            return callback('Login with email and password failed, Facebook requires account recovery');
+            // This is a part that I have tried to work through, but it is still incomplete
+            var $ = cheerio.load(body), arrayForm = [], formData = {};
+            $('form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
+            for (let i of arrayForm) if (i.value) formData[i.name] = i.value;
+            formData.jazoest = getFrom(body, 'name="jazoest" value="', '"');
+            formData.lsd = getFrom(body, 'name="lsd" value="', '"');
+            await post('https://www.facebook.com/ajax/recover/initiate/?recover_method=send_email&lara=1', formData);
+            var recoveryCode = _readLine('\x1b[33mPlease enter the recovery code sent to your email: \x1b[0m', false);
+            // There is a link to send the recovery code once received from the email
+        }
         if (headers.location.includes('/checkpoint/?next')) {
-            var { body } = await get(headers.location);
             var $ = cheerio.load(body), arrayForm = [], formData = {};
             $('form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
             for (let i of arrayForm) if (i.value) formData[i.name] = i.value;
@@ -67,12 +79,12 @@ async function login(loginData, callback) {
                 if (error) return callback('Login with email and password failed. Incorrect approvals code', null);
                 delete formData.approvals_code;
                 formData.name_action_selected = 'dont_save';
-                await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData);
+                var { body } = await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData);
                 // There are still some things I can't do here, such as: review recent logins, check checkpoints...
                 // If you get the same error, please push an issue to https://github.com/hoahenry/meta-api/issues
             } else {
                 log('Login', 'Verified from browser, continuing to login...', 'magenta');
-                await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData, { Referer: headers.location });
+                var { body } = await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData, { Referer: headers.location });
                 // There are still some things I can't do here, such as: review recent logins, check checkpoints...
                 // If you get the same error, please push an issue to https://github.com/hoahenry/meta-api/issues
             }
@@ -93,7 +105,7 @@ async function login(loginData, callback) {
 
     let requestDefaults = makeDefaults(body);
     let apiName = readdirSync(__dirname + '/api/'), api = new Object();
-    for (let name of apiName) api[name.replace(/.js/g, '')] = require(__dirname + '/api/' + name) ({ requestDefaults, jar, Cli, api, globalOptions, utils, log });
+    for (let name of apiName) api[name.replace(/.js/g, '')] = require(__dirname + '/api/' + name) ({ requestDefaults, requestMaker, jar, Cli, api, globalOptions, utils, log });
 
     return callback(null, api);
 }
