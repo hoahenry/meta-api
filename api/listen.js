@@ -1,6 +1,6 @@
 module.exports = function({ requestDefaults, api, Cli, utils, log, globalOptions, jar }) {
     const mqtt = require('mqtt'), ws = require('websocket-stream');
-    var { formatDeltaMessage, formatID, getGUID, formatDeltaEvent, _formatAttachment, decodeClientPayload } = utils;
+    var { formatDeltaMessage, formatID, getGUID, formatDeltaEvent, _formatAttachment, decodeClientPayload, formatDeltaReadReceipt } = utils;
     var form = {
         "av": globalOptions.pageID,
         "queries": JSON.stringify({
