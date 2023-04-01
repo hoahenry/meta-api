@@ -1,9 +1,8 @@
 module.exports = function({ requestDefaults, utils, globalOptions }) {
     var { makeCallback, includes } = utils;
-    return async function(threadID, markRead, callback) {
+    return async function(threadID, markRead = true, callback) {
         if (!callback) callback = makeCallback();
-        if (!threadID || includes(threadID, 'String', 'Number')) return callback('Please pass a threadID in the first arguments', null);
-        if (!markRead) markRead = true;
+        if (!threadID || !includes(threadID, 'String', 'Number')) return callback('Please pass a threadID in the first arguments', null);
         var form = {
             source: 'PagesManagerMessagesInterface',
             request_user_id: globalOptions.pageID,

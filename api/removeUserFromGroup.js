@@ -2,8 +2,8 @@ module.exports = function({ defaults, utils }) {
     var { makeCallback, includes } = utils;
     return async function(userID, threadID, callback) {
         if (!callback) callback = makeCallback();
-        if (!userID || includes(threadID, 'String', 'Number')) return callback('Please pass a userID in the first arguments.');
-        if (!threadID || includes(threadID, 'String', 'Number')) return callback('Please pass a threadID as a second argument.');
+        if (!userID || !includes(threadID, 'String', 'Number')) return callback('Please pass a userID in the first arguments.');
+        if (!threadID || !includes(threadID, 'String', 'Number')) return callback('Please pass a threadID as a second argument.');
         var form = {
             uid: userID,
             tid: threadID
