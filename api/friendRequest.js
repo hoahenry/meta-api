@@ -59,7 +59,7 @@ module.exports = function friendRequest({ requestDefaults, utils, Cli }) {
     return async function(userID, type, callback) {
         if (!callback || !Function.isFunction(callback)) callback = makeCallback();
         if (!userID || !includes(userID, 'String', 'Number')) return callback('Please pass a userID in the first arguments');
-        if (!type || ['accept', 'delete', 'send', 'cancel'].includes(type)) return callback('Please pass a type in the second arguments. Type must be "accept", "delete", "cancel" or "send"');
+        if (!type || !['accept', 'delete', 'send', 'cancel'].includes(type)) return callback('Please pass a type in the second arguments. Type must be "accept", "delete", "cancel" or "send"');
         let form = getForm(userID, type);
         var response = await requestDefaults.post('https://www.facebook.com/api/graphql/', form);
         if (!response || response.error) return callback(response);
