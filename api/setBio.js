@@ -1,11 +1,10 @@
-module.exports = function({ requestDefaults, utils, Cli }) {
-    const { makeCallback } = utils;
+module.exports = function({ browser, utils, client }) {
     return async function(content, publish, callback) {
         if (!callback && Function.isFunction(publish)) {
             callback = publish;
             publish = false;
         }
-        if (!callback || !Function.isFunction(callback)) callback = makeCallback();
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         if (!Boolean.isBoolean(publish)) publish = false;
         if (!String.isString(content)) content = '';
         let form = {
@@ -16,17 +15,16 @@ module.exports = function({ requestDefaults, utils, Cli }) {
                 input: {
                     bio: content,
                     publish_bio_feed_story: publish,
-                    actor_id: Cli.userID,
+                    actor_id: client.userID,
                     client_mutation_id: Math.round(Math.random() * 1024).toString()
                 },
                 hasProfileTileViewID: false,
                 profileTileViewID: null,
                 scale: 1
             }),
-            av: Cli.userID
+            av: client.userID
         };
-        let response = await requestDefaults.post('https://www.facebook.com/api/graphql/', form);
-        if (!response || response.error) return callback(response);
-        return callback(null);
+        let response = await browser.post('https://www.facebook.com/api/graphql/', form);
+        return !response || response.error ? callback(response) : callback(null);
     }
 }

@@ -1,7 +1,6 @@
-module.exports = function({ requestDefaults, utils, Cli }) {
-    const { makeCallback } = utils;
+module.exports = function({ browser, utils, client }) {
     return async function(color, threadID, callback) {
-        if (!callback || !Function.isFunction(callback)) callback = makeCallback();
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         if (!isNaN(color)) color = color.toString();
         let validatedColor = color !== null ? color.toLowerCase() : color;
         let form = {
@@ -11,7 +10,7 @@ module.exports = function({ requestDefaults, utils, Cli }) {
                     doc_id: "1727493033983591",
                     query_params: {
                         data: {
-                            actor_id: Cli.userID,
+                            actor_id: client.userID,
                             client_mutation_id: "0",
                             source: "SETTINGS",
                             theme_id: validatedColor,
@@ -21,8 +20,7 @@ module.exports = function({ requestDefaults, utils, Cli }) {
                 }
             })
         }
-        let response = await requestDefaults.post('https://www.facebook.com/api/graphqlbatch/', form);
-        if (!response || response.error) return callback(response);
-        return callback(null);
+        let response = await browser.post('https://www.facebook.com/api/graphqlbatch/', form);
+        return !response || response.error ? callback(response) : callback(null);
     }
 }

@@ -1,5 +1,4 @@
-module.exports = function({ requestDefaults, utils }) {
-    var { makeCallback, includes } = utils;
+module.exports = function({ browser, utils }) {
     function formatThreadGraphQLResponse(data) {
         if (data.errors) return data.errors;
         const messageThread = data.message_thread;
@@ -109,8 +108,8 @@ module.exports = function({ requestDefaults, utils }) {
         };
     }
     return async function(threadID, callback) {
-        if (!callback) callback = makeCallback();
-        if (!threadID || !includes(threadID, 'String', 'Array')) return callback('Please pass a threadID in the first arguments', null);
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
+        if (!threadID || !utils.includes(threadID, 'String', 'Array')) return callback('Please pass a threadID in the first arguments', null);
         if (!Array.isArray(threadID)) threadID = [threadID];
         var form = {};
         threadID.map(function(t, i) {
@@ -130,7 +129,7 @@ module.exports = function({ requestDefaults, utils }) {
             batch_name: 'MessengerGraphQLThreadFetcher'
         }
 
-        var response = await requestDefaults.post('https://www.facebook.com/api/graphqlbatch/', form);
+        var response = await browser.post('https://www.facebook.com/api/graphqlbatch/', form);
         if (!response || response.error) return callback(response, null);
         var threadInfo = {};
         for (let i = response.length - 2; i >= 0; i--) {

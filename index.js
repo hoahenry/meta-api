@@ -1,124 +1,32 @@
-var log = require('./system/log');
+var client = {
+    configs: {
+        pageID: null,
+        selfListen: true,
+        selfListenEvents: true,
+        listenEvents: true,
+        listenTyping: false,
+        updatePresence: false,
+        readReceipt: false,
+        autoMarkRead: false,
+        onlineStatus: true,
+        emitReady: true,
+        autoReconnect: true,
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+    }
+}
+var log = require('./log');
 var cheerio = require('cheerio');
-var reader = require('readline-sync');
 var { readdirSync } = require('fs');
+var utils = require('./utils') ({ client, log });
+var request = require('./request.js') ({ client, utils, log });
 
-var globalOptions = {
-    selfListen: false,
-    selfListenEvents: false,
-    listenEvents: false,
-    listenTyping: false,
-    updatePresence: false,
-    readReceipt: false,
-    autoMarkRead: false,
-    onlineStatus: false,
-    emitReady: true,
-    autoReconnect: false,
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
-};
-var Cli = {
-    clientID: (Math.random() * 2147483648 | 0).toString(16)
-};
-var utils = require('./system/utils') ({ Cli, globalOptions, log });
-var requestMaker = require('./system/requestMaker') ({ Cli, globalOptions, log, utils });
-
-async function login(loginData, callback) {
-    var { cookies, email, password } = loginData;
-    var { get, post, makeDefaults, jar } = requestMaker;
-    var { getFrom, makeCallback } = utils;
-    
-    if (!callback) callback = makeCallback();
-    if (cookies) {
-        log('Login', 'Logging in with cookies...', 'magenta');
-        for (let i of cookies) {
-            let cookie = (i.key || i.name) + "=" + i.value + "; expires=" + i.expires + "; domain=" + i.domain + "; path=" + i.path + ";";
-            jar.setCookie(cookie, 'https://' + i.domain);
-        }
-    } else {
-        log('Login', 'Logging in with email and password...', 'magenta');
-        var { body, headers } = await get('https://m.facebook.com/login');
-        var $ = cheerio.load(body), arrayForm = [], formData = {};
-        $('#login_form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
-        for (let i of arrayForm) if (i.value) formData[i.name] = i.value;
-
-        formData.lsd = getFrom(body, "[\"LSD\",[],{\"token\":\"", "\"}");
-        formData.lgndim = Buffer.from("{\"w\":1440,\"h\":900,\"aw\":1440,\"ah\":834,\"c\":24}").toString('base64');
-        formData.email = email || _readLine('\x1b[33mPlease enter your email or Facebook ID: \x1b[0m');
-        formData.pass = password || _readLine('\x1b[33mPlease enter your password: \x1b[0m');
-        formData.default_persistent = '0';
-        formData.lgnrnd = getFrom(body, "name=\"lgnrnd\" value=\"", "\"");
-        formData.locale = 'vi_VN';
-        formData.timezone = '-420';
-        formData.lgnjs = ~~(Date.now() / 1000);
-
-        var { headers } = await post('https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&lwv=110', formData);
-        if (!headers.location) return callback('Wrong email or password', null);
-        var { body } = await get(headers.location);
-        if (headers.location.includes('/recover/initiate')) {
-            return callback('Login with email and password failed, Facebook requires account recovery');
-            // This is a part that I have tried to work through, but it is still incomplete
-            var $ = cheerio.load(body), arrayForm = [], formData = {};
-            $('form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
-            for (let i of arrayForm) if (i.value) formData[i.name] = i.value;
-            formData.jazoest = getFrom(body, 'name="jazoest" value="', '"');
-            formData.lsd = getFrom(body, 'name="lsd" value="', '"');
-            await post('https://www.facebook.com/ajax/recover/initiate/?recover_method=send_email&lara=1', formData);
-            var recoveryCode = _readLine('\x1b[33mPlease enter the recovery code sent to your email: \x1b[0m', false);
-            // There is a link to send the recovery code once received from the email
-        }
-        if (headers.location.includes('/checkpoint/?next')) {
-            var $ = cheerio.load(body), arrayForm = [], formData = {};
-            $('form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
-            for (let i of arrayForm) if (i.value) formData[i.name] = i.value;
-            formData['submit[Continue]'] = $("#checkpointSubmitButton").html();
-            formData.approvals_code = _readLine('\x1b[33mPlease enter your approvals code or leave it blank if verified with another browser: \x1b[0m', true);
-            if (formData.approvals_code) {
-                var { headers, body } = await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData);
-                var $ = cheerio.load(body);
-                var error = $("#approvals_code").parent().attr("data-xui-error");
-                if (error) return callback('Login with email and password failed. Incorrect approvals code', null);
-                delete formData.approvals_code;
-                formData.name_action_selected = 'dont_save';
-                var { body } = await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData);
-                // There are still some things I can't do here, such as: review recent logins, check checkpoints...
-                // If you get the same error, please push an issue to https://github.com/hoahenry/meta-api/issues
-            } else {
-                log('Login', 'Verified from browser, continuing to login...', 'magenta');
-                var { body } = await post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData, { Referer: headers.location });
-                // There are still some things I can't do here, such as: review recent logins, check checkpoints...
-                // If you get the same error, please push an issue to https://github.com/hoahenry/meta-api/issues
-            }
-        }
-    }
-    var { body } = await get('https://m.facebook.com');
-    var strAppID = body.match(/appID:\s*?(\d*)/), strMQTT = body.match(/endpoint:\s*?"(.+?)"/), strMQTTPolling = body.match(/pollingEndpoint:\s*?"(.+?)"/), strIrisSeqID = body.match(/irisSeqID:\s*?"(.+?)"/);
-    if (strAppID) Cli.appID = strAppID[1];
-    if (strMQTTPolling) Cli.MQTTPolling = strMQTTPolling[1];
-    if (strMQTT) Cli.MQTT = strMQTT[1];
-    if (strIrisSeqID) Cli.irisSeqID = strIrisSeqID[1];
-    if (Cli.MQTT || Cli.MQTTPolling) Cli.region = Cli.MQTT ? Cli.MQTT.replace(/(.+)region=/g, '') : Cli.MQTTPolling.replace(/(.+)region=/g, '');
-
-    var cookie = jar.getCookies('https://www.facebook.com').filter(item => item.cookieString().split('=')[0] === 'c_user');
-    if (cookie.length == 0) return callback('Error retrieving user ID, login your account with browser to check and try again.', null);
-    Cli.userID = cookie[0].cookieString().split("=")[1].toString();
-    log('Login', 'Logged in with userID: ' + Cli.userID, 'magenta');
-
-    let requestDefaults = makeDefaults(body);
-    let apiName = readdirSync(__dirname + '/api/'), api = new Object();
-    for (let name of apiName) api[name.replace(/.js/g, '')] = require(__dirname + '/api/' + name) ({ requestDefaults, requestMaker, jar, Cli, api, globalOptions, utils, log });
-
-    return callback(null, api);
+function setConfigs(configs) {
+    var allowedProperties = Object.keys(client.configs), clientConfigProperties = Object.keys(configs);
+    if (clientConfigProperties.some(item => !allowedProperties.includes(item))) log('setConfigs', 'Unrecognized option given to setOptions: ' + clientConfigProperties.filter(item => !allowedProperties.includes(item)).join(', '));
+    clientConfigProperties.filter(item => allowedProperties.includes(item)).forEach(item => client.configs[item] = options[item]);
 }
 
-function setOptions(options) {
-    var allowedProperties = Object.keys(globalOptions);
-    for (let i of Object.keys(options)) {
-        if (!allowedProperties.includes(i)) log('setOptions', 'Unrecognized option given to setOptions: ' + i);
-        else globalOptions[i] = options[i];
-    }
-}
-
-async function checkUpdate(allowUpdate) {
+module.exports.checkUpdate = async function checkUpdate(allowUpdate) {
     var { version } = require('./package.json');
     var { lt: versionChecker } = require('semver');
     var { body } = await requestMaker.get('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
@@ -133,14 +41,79 @@ async function checkUpdate(allowUpdate) {
     }
 }
 
-function _readLine(question, nullAnswer) {
-    let answer = reader.question(question, { encoding: 'utf-8' });
-    process.stdout.write("\u001b[0J\u001b[1J\u001b[2J\u001b[0;0H\u001b[0;0W");
-    return !nullAnswer ? answer.length > 0 ? answer : _readLine(question, nullAnswer) : answer;
-}
+module.exports = async function login({ cookies, email, password, configs}, callback) {
+    if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
+    if (configs) setConfigs(configs);
+    if (cookies) {
+        log('Login', 'Logging in with cookies...', 'magenta');
+        if (!Array.isArray(cookies)) return callback('Cookies must be an Array');
+        for (let i of cookies) {
+            let cookie = (i.key || i.name) + "=" + i.value + "; expires=" + i.expires + "; domain=" + i.domain + "; path=" + i.path + ";";
+            await request.jar.setCookie(cookie, 'https://' + i.domain);
+        }
+    } else {
+        log('Login', 'Logging in with email and password...', 'magenta');
+        var { body } = await request('https://m.facebook.com/login');
+        var $ = cheerio.load(body), arrayForm = [], formData = {};
+        $('#login_form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
+        for (let i of arrayForm) if (i.value) formData[i.name] = i.value;
 
-module.exports = {
-    login,
-    setOptions,
-    checkUpdate
+        formData.lsd = formData.lsd || utils.getFrom(body, "\\[\"LSD\",\\[],{\"token\":\"", "\"}");
+        formData.lgndim = Buffer.from("{\"w\":1440,\"h\":900,\"aw\":1440,\"ah\":834,\"c\":24}").toString('base64');
+        formData.email = email || utils.readLine('\x1b[33mPlease enter your email or Facebook ID: \x1b[0m');
+        formData.pass = password || utils.readLine('\x1b[33mPlease enter your password: \x1b[0m');
+        formData.default_persistent = '0';
+        formData.lgnrnd = formData.lgnrnd || utils.getFrom(body, "name=\"lgnrnd\" value=\"", "\"");
+        formData.locale = 'vi_VN';
+        formData.timezone = '-420';
+        formData.lgnjs = ~~(Date.now() / 1000);
+
+        var { headers } = await request.post('https://www.facebook.com/login/device-based/regular/login/?login_attempt=1&lwv=110', formData, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+        if (!headers.location) return callback('Wrong email or password.', null);
+        if (headers.location.includes('/checkpoint/?next')) {
+            var { body } = await request(headers.location);
+            var $ = cheerio.load(body), arrayForm = [], formData = {};
+            $('form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
+            for (let i of arrayForm) if (i.value) formData[i.name] = i.value;
+            formData['submit[Continue]'] = $("#checkpointSubmitButton").html();
+            formData.approvals_code = utils.readLine('\x1b[33mPlease enter your approvals code or leave it blank if verified with another browser: \x1b[0m', true);
+            if (formData.approvals_code) {
+                var { headers, body } = await request.post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData);
+                var $ = cheerio.load(body);
+                var error = $("#approvals_code").parent().attr("data-xui-error");
+                if (error) return callback('Login with email and password failed. Incorrect approvals code', null);
+                delete formData.approvals_code;
+                formData.name_action_selected = 'dont_save';
+                var { body } = await request.post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData);
+                // There are still some things I can't do here, such as: review recent logins, check checkpoints...
+                // If you get the same error, please push an issue to https://github.com/hoahenry/meta-plus/issues
+            } else {
+                log('Login', 'Verified from browser, continuing to login...', 'magenta');
+                var { body } = await request.post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData, { headers: { Referer: headers.location } });
+                // There are still some things I can't do here, such as: review recent logins, check checkpoints...
+                // If you get the same error, please push an issue to https://github.com/hoahenry/meta-plus/issues
+            }
+        }
+    }
+    var { body, headers } = await request('https://m.facebook.com/');
+    
+    var strAppID = body.match(/appID:\s*?(\d*)/), strWssEndpoint = body.match(/"(wss:\/\/.+?)"/), strPollingEndpoint = body.match(/pollingEndpoint:\s*?"(.+?)"/), strIrisSeqID = body.match(/irisSeqID:\s*?"(.+?)"/);
+    if (strAppID) client.appID = strAppID[1];
+    if (strPollingEndpoint) client.pollingEndpoint = strPollingEndpoint[1];
+    if (strWssEndpoint) client.wssEndPoint = strWssEndpoint[1];
+    if (strIrisSeqID) client.irisSeqID = strIrisSeqID[1];
+    if (client.MQTT || client.pollingEndpoint) client.region = client.MQTT ? client.MQTT.replace(/(.+)region=/g, '') : client.pollingEndpoint.replace(/(.+)region=/g, '');
+    
+    var cookie = request.jar.getCookies('https://www.facebook.com').filter(item => item.cookieString().split('=')[0] === 'c_user');
+    if (cookie.length == 0) return callback('Error retrieving user ID, login your account with browser to check and try again.', null);
+    client.userID = cookie[0].cookieString().split("=")[1].toString();
+    log('Login', 'Logged in with userID: ' + client.userID, 'magenta');
+    log('Login', `Your MQTT Region: ${client.region ? client.region.toUpperCase() : 'Not Found.'}`, 'magenta');
+
+    log('Login', 'Creating an environment variable for the account...', 'magenta');
+    let browser = request.makeAccountBrowser(body);
+    let apiName = readdirSync('./api/').map(name => name.replace(/\.js/, '')), api = {};
+    for (let name of apiName) api[name] = require('./api/' + name) ({ browser, request, client, log, api, utils });
+
+    return callback(null, api);
 }

@@ -1,3 +1,3 @@
-module.exports = function({ Cli }) {
-    return Cli.userID;
+module.exports = function({ client }) {
+    return client.userID;
 }

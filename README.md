@@ -12,48 +12,37 @@
 <!-- Install -->
 ## Install
 ### Install
-#### 1. Edit package.json.
-- Edit your package.json file as below:
-```sh
-{
-    ...,
-    "dependencies": {
-        ...,
-        "@hoahenry/meta-api": "",
-        ...
-    },
-    ...
-}
-```
-- After editing, run: `npm install`
-#### 2. Use `npm`
+#### 1. Use `npm`
 - At command line, enter: `npm i @hoahenry/meta-api`
-#### 3. Update
+#### 2. Update
 - Use built-in function: `checkUpdate(allowUpdate)`
 - If `allowUpdate` is `true`, it will automatically update if a new version is available.
 
 ### Use
-- Before logging in, I recommend using the `setOptions(options)` function to edit some of the properties available in the API:
-```sh
-var { setOptions } = require('@hoahenry/meta-api');
-setOptions({
-    // These are the accepted properties in setOptions
-    selfListen: false,
-    selfListenEvents: false,
-    listenEvents: false,
-    listenTyping: false,
-    updatePresence: false,
-    readReceipt: false,
-    autoMarkRead: false,
-    onlineStatus: false,
-    emitReady: true,
-    autoReconnect: false,
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
-});
-
-// You can login with the above options
-```
 - You can use function `login(loginData, callback)`.
+    - `loginData`:
+        - `email`: Your email
+        - `password`: Your password
+        - `cookies`: `Recommend` Your Cookies
+        - `configs`:
+        ```sh
+        {
+            //These are the default and accepted properties in configs
+            pageID: null,
+            selfListen: true,
+            selfListenEvents: true,
+            listenEvents: true,
+            listenTyping: false,
+            updatePresence: false,
+            readReceipt: false,
+            autoMarkRead: false,
+            onlineStatus: true,
+            emitReady: true,
+            autoReconnect: true,
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+        }
+        ```
+    - `callback(error, api)`: Called after login complete, return error or list api
 - Login with Cookies:
 ```sh
 var { login } = require('@hoahenry/meta-api');

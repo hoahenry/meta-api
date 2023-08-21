@@ -1,5 +1,4 @@
-module.exports = function({ requestDefaults, utils, Cli }) {
-    var { makeCallback } = utils;
+module.exports = function({ browser, utils, client }) {
     let map = {
         unlike: 0,
         like: 1,
@@ -23,16 +22,16 @@ module.exports = function({ requestDefaults, utils, Cli }) {
             callback = type;
             type = 0;
         }
-        if (!callback || !Function.isFunction(callback)) callback = makeCallback();
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         type = map[type.toLowerCase()] || 1;
         let form = {
-            av: Cli.userID,
+            av: client.userID,
             fb_api_caller_class: "RelayModern",
             fb_api_req_friendly_name: "CometUFIFeedbackReactMutation",
             doc_id: "4769042373179384",
             variables: JSON.stringify({
                 input: {
-                    actor_id: Cli.userID,
+                    actor_id: client.userID,
                     feedback_id: Buffer.from('feedback:' + postID).toString("base64"),
                     feedback_reaction: type,
                     feedback_source: "OBJECT",
@@ -45,8 +44,7 @@ module.exports = function({ requestDefaults, utils, Cli }) {
                 scale: 3
             })
         }
-        let response = await requestDefaults.post('https://www.facebook.com/api/graphql/', form);
-        if (!response || response.error) return callback(response);
-        return callback(null, formatData(response));
+        let response = await browser.post('https://www.facebook.com/api/graphql/', form);
+        return !response || response.error ? callback(response) : callback(null);
     }
 }

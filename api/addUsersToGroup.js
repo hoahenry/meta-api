@@ -1,19 +1,18 @@
-module.exports = function({ requestDefaults, Cli, utils, log }) {
-    var { includes, getType, makeCallback, generateOfflineThreadingID, generateTimestampRelative, generateThreadingID, parseAndCheckLogin } = utils;
+module.exports = function({ browser, client, utils, log }) {
     return async function(userID, threadID, callback) {
         if (!callback && Function.isFunction(threadID)) return log('addUserToGroup', 'Please pass a threadID as a second argument.', 'warn');
-        if (!callback) callback = makeCallback();
-        if (!includes(threadID, 'Number', 'String')) return log('addUserToGroup', 'ThreadID should be of type Number or String and not ' + getType(threadID) + '.');
+        if (!callback) callback = utils.makeCallback();
+        if (!utils.includes(threadID, 'Number', 'String')) return log('addUserToGroup', 'ThreadID should be of type Number or String and not ' + utils.getType(threadID) + '.');
         if (!Array.isArray(userID)) userID = [userID];
-        var messageAndOTID = generateOfflineThreadingID();
+        var messageAndOTID = utils.generateOfflineThreadingID();
         var form = {
             client: 'mecury',
             action_type: 'ma-type:log-message',
-            author: 'fbid:' + Cli.userID,
+            author: 'fbid:' + client.userID,
             thread_id: '',
             timestamp: Date.now(),
             timestamp_absolute: 'Today',
-            timestamp_relative: generateTimestampRelative(),
+            timestamp_relative: utils.generateTimestampRelative(),
             timestamp_time_passed: '0',
             is_unread: false,
             is_cleared: false,
@@ -28,16 +27,15 @@ module.exports = function({ requestDefaults, Cli, utils, log }) {
             status: '0',
             offline_threading_id: messageAndOTID,
             message_id: messageAndOTID,
-            threading_id: generateThreadingID(Cli.clientID),
+            threading_id: utils.generateThreadingID(Cli.clientID),
             manual_rety_cnt: '0',
             thread_fbid: threadID
         }
         for (let i = 0; i < userID.length; i++) {
-            if (!['Number', 'String'].includes(getType(userID[i]))) log('addUserToGroup', 'Elements of userID should be of type Number or String and not ' + getType(userID[i]) + '.', 'error');
-            form["log_message_data[added_participants][" + i + "]"] = "fbid:" + userID[i];
+            if (!utils.includes(userID[i], 'Number', 'String')) log('addUserToGroup', 'Elements of userID should be of type Number or String and not ' + utils.getType(userID[i]) + '.', 'error');
+            form["log_message_data[added_participants][" + i + "]"] = "fbid:" + userID[i].toString();
         }
-        var response = await requestDefaults.post('https://www.facebook.com/messaging/send/', form);
-        if (!response || response.error) return callback(response);
-        return callback(null);
+        var response = await browser.post('https://www.facebook.com/messaging/send/', form);
+        return response || response.error ? callback(response) : callback(null);
     }
 }

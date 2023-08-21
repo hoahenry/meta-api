@@ -1,8 +1,7 @@
-module.exports = function({ requestDefaults, utils }) {
-    var { makeCallback, includes } = utils;
+module.exports = function({ browser, utils }) {
     return async function(title, options = {}, threadID, callback) {
-        if (!callback) callback = makeCallback();
-        if (!threadID || !includes(threadID, 'String', 'Number')) return callback('Please pass a threadID in the third arguments');
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
+        if (!threadID || !utils.includes(threadID, 'String', 'Number')) return callback('Please pass a threadID in the third arguments');
         var form = {
             target_id: threadID,
             question_text: title
@@ -12,8 +11,7 @@ module.exports = function({ requestDefaults, utils }) {
             form['option_text_array[' + i + ']'] = properties[i];
             form['option_is_selected_array[' + i + ']'] = options[properties[i]] ? '1' : '0';
         }
-        var response = await requestDefaults.post('https://www.facebook.com/messaging/group_polling/create_poll/?dpr=1', form);
-        if (!response || response.error) return callback(response);
-        return callback(null);
+        var response = await browser.post('https://www.facebook.com/messaging/group_polling/create_poll/?dpr=1', form);
+        return !response || response.error ? callback(response) : callback(null);
     }
 }

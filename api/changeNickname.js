@@ -1,14 +1,12 @@
-module.exports = function({ requestDefaults, utils, Cli }) {
-    var { makeCallback } = utils;
+module.exports = function({ browser, utils }) {
     return async function(nickname, threadID, participantID, callback) {
-        if (!callback || !Function.isFunction(callback)) callback = makeCallback();
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         var form = {
             nickname: nickname,
             participant_id: participantID,
             thread_or_other_fbid: threadID
         }
-        var response = await requestDefaults.post('https://www.facebook.com/messaging/save_thread_nickname/?source=thread_settings&dpr=1', form);
-        if (!response || response.error) return callback(response);
-        return callback(null);
+        var response = await browser.post('https://www.facebook.com/messaging/save_thread_nickname/?source=thread_settings&dpr=1', form);
+        return !response || response.error ? callback(response) : callback(null);
     }
 }

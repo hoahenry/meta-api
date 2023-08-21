@@ -1,5 +1,4 @@
-module.exports = function({ requestDefaults, utils, globalOptions }) {
-    const { makeCallback, getType } = utils;
+module.exports = function({ browser, utils, client }) {
     function formatThreadList(data) {
         return data.map(t => formatThreadGraphQLResponse(t));
     }
@@ -113,11 +112,11 @@ module.exports = function({ requestDefaults, utils, globalOptions }) {
             tags = [''];
         }
         if (!Number.isNumber(limit) || !Number.isInteger(limit) || limit <= 0) return callback('Limit must be a positive integer');
-        if (getType(timestamp) !== 'Null' && (!Number.isNumber(timestamp) || !Number.isInteger(timestamp))) return callback('Timestamp must be an integer or null');
+        if (utils.getType(timestamp) !== 'Null' && (!Number.isNumber(timestamp) || !Number.isInteger(timestamp))) return callback('Timestamp must be an integer or null');
         if (!Array.isArray(tags)) tags = [tags];
-        if (!callback || !Function.isFunction(callback)) callback = makeCallback();
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         const form = {
-			"av": globalOptions.pageID,
+			"av": client.configs.pageID,
 			"queries": JSON.stringify({
 				"o0": {
 					"doc_id": "3336396659757871",
@@ -132,7 +131,7 @@ module.exports = function({ requestDefaults, utils, globalOptions }) {
 			}),
 			"batch_name": "MessengerGraphQLThreadlistFetcher"
 		};
-        let response = await requestDefaults.post('https://www.facebook.com/api/graphqlbatch/', form);
+        let response = await browser.post('https://www.facebook.com/api/graphqlbatch/', form);
         if (!response || response.error) return callback(response, null);
         if (timestamp) response[0].o0.data.viewer.message_threads.nodes.shift();
         return callback(null, formatThreadList(response[0].o0.data.viewer.message_threads.nodes));

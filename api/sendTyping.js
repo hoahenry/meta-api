@@ -1,5 +1,4 @@
-module.exports = function({ requestDefaults, utils }) {
-    var { makeCallback } = utils;
+module.exports = function({ browser, utils }) {
     function getForm(typing, threadID, isGroup) {
         return {
             typ: +typing,
@@ -9,15 +8,13 @@ module.exports = function({ requestDefaults, utils }) {
         }
     }
     return async function(threadID, isGroup, callback) {
-        if (!callback || !Function.isFunction(callback)) callback = makeCallback();
-        let form = getForm(true, threadID, isGroup);
-        let response = await requestDefaults.post('https://www.facebook.com/ajax/messaging/typ.php', form);
-        if (!response || response.error) return callback(response, null);
-        async function removeTyping() {
-            let form = getForm(false, threadID, isGroup);
-            let response = await requestDefaults.post('https://www.facebook.com/ajax/messaging/typ.php', form);
-            if (!response || response.error) return callback(response, null);
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
+        let response = await browser.post('https://www.facebook.com/ajax/messaging/typ.php', getForm(true, threadID, isGroup));
+        async function removeTyping(callback) {
+            if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
+            let response = await browser.post('https://www.facebook.com/ajax/messaging/typ.php', getForm(false, threadID, isGroup));
+            return !response || response.error ? callback(response) : callback(null);
         }
-        return callback(null, removeTyping);
+        return !response || response.error ? callback(response) : callback(null, removeTyping)
     }
 }

@@ -1,56 +1,45 @@
-module.exports = function({ requestDefaults, Cli, utils }) {
-    var bluebird = require('bluebird');
+module.exports = function({ browser, client, utils }) {
     var allowedProperties = ['attachments', 'url', 'sticker', 'emoji', 'emojiSize', 'body', 'mentions', 'location'];
-    var { getType, generateOfflineThreadingID, generateTimestampRelative, generateThreadingID, getSignatureID } = utils;
-    
-    async function uploadAttachment(attachments, callback) {
-        var uploads = [];
 
-        for (let i of attachments) {
-            if (!utils.isReadableStream(i)) return callback('Attachment should be a readable stream');
-            var form = {
-                upload_1024: i,
-                voice_clip: 'true'
-            }
+    async function uploadAttachments(attachment, callback) {
+        try {
+            if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
 
-            try {
-                var response = await requestDefaults.postFormData('https://upload.facebook.com/ajax/mercury/upload.php', form);
-                if (!response || response.error) return callback(response);
-                uploads.push(response.payload.metadata[0]);
-            } catch (error) {
-                return callback(error, null)
-            }
+            let uploads = attachment.map(async function(item) {
+                if (!utils.isReadableStream(item)) throw new Error('Attachment should be a readable stream.');
+                let formData = {
+                    voice_clip: 'true',
+                    upload_1024: item
+                }
+                let response = await browser.postFormData('https://upload.facebook.com/ajax/mercury/upload.php', formData);
+                if (!response || response.error) throw new Error(response);
+                return response.payload.metadata[0];
+            });
+
+            let results = await Promise.all(uploads);
+            return callback(null, results);
+        } catch (error) {
+            return callback(error, null);
         }
-
-        bluebird.all(uploads)
-        .then((response) => {
-            return callback(null, response);
-        })
-        .catch((error) => {
-            return callback(error, null)
-        })
     }
 
     async function sendContent(form, threadID, isSingleUser, messageAndOTID, callback) {
         if (Array.isArray(threadID)) {
-            for (var i = 0; i < threadID.length; i++) {
-                form["specific_to_list[" + i + "]"] = "fbid:" + threadID[i];
-            }
-            form["specific_to_list[" + threadID.length + "]"] = "fbid:" + Cli.userID;
+            for (var i = 0; i < threadID.length; i++) form["specific_to_list[" + i + "]"] = "fbid:" + threadID[i];
+            form["specific_to_list[" + threadID.length + "]"] = "fbid:" + client.userID;
             form["client_thread_id"] = "root:" + messageAndOTID;
         } else {
             if (isSingleUser) {
                 form["specific_to_list[0]"] = "fbid:" + threadID;
-                form["specific_to_list[1]"] = "fbid:" + Cli.userID;
+                form["specific_to_list[1]"] = "fbid:" + client.userID;
                 form["other_user_fbid"] = threadID;
             } else {
                 form["thread_fbid"] = threadID;
             }
         }
         
-        var response = await requestDefaults.post('https://www.facebook.com/messaging/send/', form);
+        var response = await browser.post('https://www.facebook.com/messaging/send/', form);
         if (!response || response.error) return callback(response, null);
-
         try {
             var messageInfo = response.payload.actions.reduce((p, v) => {
                 return ({ threadID: v.thread_fbid, messageID: v.message_id, timestamp: v.timestamp } || p);
@@ -61,29 +50,37 @@ module.exports = function({ requestDefaults, Cli, utils }) {
         }
     }
 
-    return async function(message, threadID, replyToMessage, callback, isGroup) {
-        if (typeof isGroup == 'undefined') isGroup = null;
-        var msgType = getType(message);
-        var threadIDType = getType(threadID);
-        var messageIDType = getType(replyToMessage);
-        if (msgType == 'String') message = { body: message };
-        if (messageIDType == 'AsyncFunction' || messageIDType == 'Function') {
+    async function getUrl(url, callback) {
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
+		const form = {
+			image_height: 960,
+			image_width: 960,
+			uri: url
+		};
+        let response = await browser.post('https://www.facebook.com/message_share_attachment/fromURI/', form);
+        if (!response || response.error || !response.payload) return callback(response);
+        return callback(null, response.payload.share_data.share_params);
+	}
+
+    return async function(message, threadID, replyToMessage, callback) {
+        if (String.isString(message)) message = { body: message };
+        if (replyToMessage && Function.isFunction(replyToMessage)) {
             callback = replyToMessage;
             replyToMessage = '';
         }
-        if (!callback) callback = utils.makeCallback();
-        if (msgType !== "String" && msgType !== "Object") return callback('Message should be of type string or object and not ' + msgType + '.', null);
-        if (threadIDType !== 'Array' && threadIDType !== 'Number' && threadIDType !== 'String') return callback('ThreadID should be of type number, string, or array and not ' + threadIDType, null);
-        var disallowedProperties = Object.keys(message).filter(prop => !allowedProperties.includes(prop));
-        if (disallowedProperties.length > 0) return callback('Dissallowed props: ' + disallowedProperties.join(', '), null);
-        var messageAndOTID = generateOfflineThreadingID();
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
+        if (!String.isString(message) && !Object.isObject(message)) return callback(`Message must be String or Object. Receive: ${utils.getType(message)}`);
+        if (!Array.isArray(threadID) && !utils.includes(threadID, 'Number', 'String')) return callback(`ThreadID must be Number, String or Array. Receive: ${utils.getType(threadID)}`);
+        let disallowedProperties = Object.keys(message).filter(prop => !allowedProperties.includes(prop));
+        if (disallowedProperties.length > 0) return callback('Dissallowed props: ' + disallowedProperties.join(', '));
+        let messageAndOTID = utils.generateOfflineThreadingID();
         var form = {
             client: "mercury",
             action_type: "ma-type:user-generated-message",
-            author: "fbid:" + Cli.userID,
+            author: "fbid:" + client.userID,
             timestamp: Date.now(),
             timestamp_absolute: "Today",
-            timestamp_relative: generateTimestampRelative(),
+            timestamp_relative: utils.generateTimestampRelative(),
             timestamp_time_passed: "0",
             is_unread: false,
             is_cleared: false,
@@ -102,16 +99,15 @@ module.exports = function({ requestDefaults, Cli, utils }) {
             status: "0",
             offline_threading_id: messageAndOTID,
             message_id: messageAndOTID,
-            threading_id: generateThreadingID(Cli.clientID),
+            threading_id: utils.generateThreadingID((Math.random() * 2147483648 | 0).toString(16)),
             "ephemeral_ttl_mode:": "0",
             manual_retry_cnt: "0",
             has_attachment: !!(message.attachments || message.url || message.sticker),
-            signatureID: getSignatureID(),
+            signatureID: utils.getSignatureID(),
             replied_to_message_id: replyToMessage
         };
-        
         if (message.location) {
-            if (message.location.latitude == null || message.location.longitude == null) return callback('location property needs both latitude and longitude');
+            if (message.location.latitude == null || message.location.longitude == null) return callback('Location property needs both latitude and longitude');
             form["location_attachment[coordinates][latitude]"] = message.location.latitude;
             form["location_attachment[coordinates][longitude]"] = message.location.longitude;
             form["location_attachment[is_current_location]"] = !!message.location.current;
@@ -119,66 +115,50 @@ module.exports = function({ requestDefaults, Cli, utils }) {
         if (message.sticker) form["sticker_id"] = message.sticker;
         if (message.emoji) {
             if (!message.emojiSize) message.emojiSize = 'medium';
-            if (form['body'] !== null && form['body']) return callback('Body is not Empty', null);
+            if (form['body'] && form['body'] !== null) return callback('Body is not Empty', null);
             form['body'] = message.emoji;
             form["tags[0]"] = "hot_emoji_size:" + message.emojiSize;
         }
         if (message.mentions) {
-            Object.keys(message.mentions).map((v, i) => {
-                if (!String.isString(v)) return callback('Mention tags must be strings', null);
-                let offset = message.body.indexOf(message.mentions[v]);
-                if (offset < 0) return callback('Mention for ' + tag + 'not found in message', null);
-                form["profile_xmd[" + i + "][offset]"] = offset;
-                form["profile_xmd[" + i + "][length]"] = message.mentions[v].length;
-                form["profile_xmd[" + i + "][id]"] = v || 0;
-                form["profile_xmd[" + i + "][type]"] = "p";
-            })
+            message.mentions.forEach((item, index) => {
+                if (!String.isString(item.tag)) return callback('Mention tags must be String');
+                if (!message.body.includes(item.tag)) return callback('Mention for ' + item.tag + 'not found in message');
+                form["profile_xmd[" + index + "][offset]"] = message.body.indexOf(item.tag);
+                form["profile_xmd[" + index + "][length]"] = item.tag.length;
+                form["profile_xmd[" + index + "][id]"] = item.id || item.ID || item.userID || 0;
+                form["profile_xmd[" + index + "][type]"] = "p";
+            });
         }
 
         async function handleAttachments(_callback) {
             if (!message.attachments) return _callback();
-            else {
-                form["image_ids"] = [];
-                form["gif_ids"] = [];
-                form["file_ids"] = [];
-                form["video_ids"] = [];
-                form["audio_ids"] = [];
-                if (utils.getType(message.attachments) !== "Array") message.attachments = [message.attachments];
-                return uploadAttachment(message.attachments, (error, files) => {
-                    if (error) return callback(error, null);
-                    else {
-                        files.forEach(function(file) {
-                            let key = Object.keys(file);
-                            let type = key[0];
-                            form["" + type + "s"].push(file[type])
-                        })
-                        return _callback();
-                    }
+            if (!Array.isArray(message.attachments)) message.attachments = [message.attachments];
+            return uploadAttachments(message.attachments, (error, files) => {
+                if (error) return callback(error, null);
+                files.forEach(function(file, index) {
+                    let key = Object.keys(file);
+                    let type = key[0];
+                    if (!form[type + "s"]) form[type + "s"] = [];
+                    form[type + "s"].push(file[type]);
+                    if (index + 1 === files.length) return _callback();
                 })
-            }
-        }
-        async function handleUrl(_callback) {
-            if (!message.url) return _callback();
-            else {
-                form["shareable_attachment[share_type]"] = "100";
-                return getUrl(message.url, (error, params) => {
-                    if (error) return callback(error, null);
-                    else {
-                        form["shareable_attachment[share_params]"] = params;
-                        return _callback();
-                    }
-                })
-            }
+            });
         }
 
-        handleAttachments(() => {
-            handleUrl(() => {
-                if (Array.isArray(threadID)) return sendContent(form, threadID, false, messageAndOTID, callback);
-                else {
-                    if (!Boolean.isBoolean(isGroup)) return sendContent(form, threadID, threadID.toString().length < 16, messageAndOTID, callback);
-                    else return sendContent(form, threadID, !isGroup, messageAndOTID, callback);
-                }
-            })
-        })
+        function handleSendURL(_callback) {
+            if (!message.url) return _callback();
+            form["shareable_attachment[share_type]"] = "100";
+            return getUrl(message.url, (error, params) => {
+                if (error) return callback(error);
+                form["shareable_attachment[share_params]"] = params;
+                return _callback();
+            });
+        }
+        
+        return await handleAttachments(async function() {
+            return await handleSendURL(async function() {
+                return await sendContent(form, threadID, threadID.toString().length < 16, messageAndOTID, callback);
+            });
+        });
     }
 }

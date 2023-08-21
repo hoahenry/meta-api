@@ -1,18 +1,21 @@
-module.exports = function({ Cli, globalOptions, log }) {
-    Function.isFunction = function(v) {
-        var type = Object.prototype.toString.call(v).slice(8, -1);
+var reader = require('readline-sync');
+var stream = require('stream');
+
+module.exports = function({ client }) {
+    Function.isFunction = function (f) {
+        var type = Object.prototype.toString.call(f).slice(8, -1);
         return type === 'Function' || type === 'AsyncFunction';
     }
-    Number.isNumber = function(n) {
+    Number.isNumber = function (n) {
         return Object.prototype.toString.call(n).slice(8, -1) === 'Number';
     }
-    Object.isObject = function(o) {
+    Object.isObject = function (o) {
         return Object.prototype.toString.call(o).slice(8, -1) === 'Object';
     }
-    String.isString = function(s) {
+    String.isString = function (s) {
         return Object.prototype.toString.call(s).slice(8, -1) === 'String';
     }
-    Boolean.isBoolean = function(b) {
+    Boolean.isBoolean = function (b) {
         return Object.prototype.toString.call(b).slice(8, -1) === 'Boolean';
     }
 
@@ -24,14 +27,15 @@ module.exports = function({ Cli, globalOptions, log }) {
         return Object.prototype.toString.call(obj).slice(8, -1);
     }
 
-    function getFrom(str, startToken, endToken) {
-        var start = str.indexOf(startToken) + startToken.length;
-        if (start < startToken.length) return "";
-    
-        var lastHalf = str.substring(start);
-        var end = lastHalf.indexOf(endToken);
-        if (end === -1) return '';
-        return lastHalf.substring(0, end);
+    function getFrom(html, firstStr, lastStr) {
+        var regExp = new RegExp(firstStr + '(.*?)' + lastStr), match = html.match(regExp);
+        return match && match.length > 1 ? match[1] : '';
+    }
+
+    function readLine(question, nullAnswer) {
+        let answer = reader.question(question, { encoding: 'utf-8' });
+        process.stdout.write("\u001b[0J\u001b[1J\u001b[2J\u001b[0;0H\u001b[0;0W");
+        return !nullAnswer && answer.length > 0 ? answer : readLine(question, nullAnswer);
     }
 
     function makeParsable(html) {
@@ -44,6 +48,26 @@ module.exports = function({ Cli, globalOptions, log }) {
 
     function formatCookie(array, url) {
         return array[0] + "=" + array[1] + "; Path=" + array[3] + "; Domain=" + url + ".com";
+    }
+
+    function getGUID() {
+        var sectionLength = Date.now();
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(item) {
+            var r = Math.floor((sectionLength + Math.random() * 16) % 16);
+            sectionLength = Math.floor(sectionLength / 16);
+            var _guid = (item == "x" ? r : (r & 7) | 8).toString(16);
+            return _guid;
+        })
+    }
+
+    function buffer2json(buffer, callback) {
+        try {
+            if (!Buffer.isBuffer(buffer)) throw new Error('!Buffer');
+            var b2s = Buffer.from(buffer).toString();
+            return callback(null, JSON.parse(b2s));
+        } catch (error) {
+            return callback(error, null);
+        }
     }
 
     function formatID(id) {
@@ -71,6 +95,10 @@ module.exports = function({ Cli, globalOptions, log }) {
             timestamp: md.timestamp,
             isGroup: !!md.threadKey.threadFbId
         };
+    }
+
+    function decodeClientPayload(payloadData) {
+        return JSON.parse(String.fromCharCode.apply(null, payloadData));
     }
 
     function getExtension(original_extension, fullFileName = "") {
@@ -476,19 +504,6 @@ module.exports = function({ Cli, globalOptions, log }) {
         }
     }
 
-    function decodeClientPayload(payloadData) {
-        return JSON.parse(String.fromCharCode.apply(null, payloadData));
-    }
-
-    function formatDeltaReadReceipt(delta) {
-        return {
-            reader: delta.threadKey.otherUserFbId || delta.actorFbId,
-            time: delta.actionTimestampMs,
-            threadID: formatID(delta.threadKey.otherUserFbId || delta.threadKey.threadFbId),
-            type: "read_receipt"
-        };
-    }
-
     function formatDeltaEvent(m) {
         var logMessageType;
         var logMessageData;
@@ -532,23 +547,8 @@ module.exports = function({ Cli, globalOptions, log }) {
         };
     }
 
-    function getAdminTextMessageType(type) {
-        var form = {
-            change_thread_theme: 'log:thread-color',
-            change_thread_icon: 'log:thread-icon',
-            change_thread_nickname: 'log:user-nickname',
-            change_thread_admins: 'log:thread-admins',
-            group_poll: 'log:thread-poll',
-            change_thread_approval_mode: 'log:thread-approval-mode',
-            messenger_call_log: 'log:thread-call',
-            participant_joined_group_call: 'log:thread-call'
-        }
-        return form[type] || type;
-    }
-
     function isReadableStream(obj) {
-        var _stream = require('stream');
-        return (obj instanceof _stream.Stream && (getType(obj._read) === 'Function' || getType(obj._read) == 'AsyncFunction') && getType(obj._readableState) == 'Object');
+        return (obj instanceof stream.Stream && Function.isFunction(obj._read) && Object.isObject(obj._readableState));
     }
 
     function generateOfflineThreadingID() {
@@ -557,6 +557,22 @@ module.exports = function({ Cli, globalOptions, log }) {
         var str = ("0000000000000000000000" + value.toString(2)).slice(-22);
         var msgs = ret.toString(2) + str;
         return binaryToDecimal(msgs);
+    }
+
+    function generateTimestampRelative() {
+        var d = new Date();
+        return d.getHours() + ":" + padZeros(d.getMinutes());
+    }
+
+    function generateThreadingID(clientID) {
+        var k = Date.now();
+        var l = Math.floor(Math.random() * 4294967295);
+        var m = clientID;
+        return "<" + k + ":" + l + "-" + m + "@mail.projektitan.com>";
+    }
+
+    function getSignatureID() {
+        return Math.floor(Math.random() * 2147483648).toString(16);
     }
 
     function binaryToDecimal(data) {
@@ -579,11 +595,6 @@ module.exports = function({ Cli, globalOptions, log }) {
         return ret;
     }
 
-    function generateTimestampRelative() {
-        var d = new Date();
-        return d.getHours() + ":" + padZeros(d.getMinutes());
-    }
-
     function padZeros(val, len) {
         val = String(val);
         len = len || 2;
@@ -591,61 +602,51 @@ module.exports = function({ Cli, globalOptions, log }) {
         return val;
     }
 
-    function generateThreadingID(clientID) {
-        var k = Date.now();
-        var l = Math.floor(Math.random() * 4294967295);
-        var m = clientID;
-        return "<" + k + ":" + l + "-" + m + "@mail.projektitan.com>";
-    }
-    
-    function getSignatureID() {
-        return Math.floor(Math.random() * 2147483648).toString(16);
-    }
-
     function makeCallback() {
-        return function(error, data) {
-            if (error) return error;
-            else return data
+        return async function callback(error, data) {
+            return new Promise(function (resolve, reject) {
+                return error ? reject(error) : resolve(data);
+            });
         }
     }
 
-    function getGUID() {
-        var sectionLength = Date.now();
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(item) {
-            var r = Math.floor((sectionLength + Math.random() * 16) % 16);
-            sectionLength = Math.floor(sectionLength / 16);
-            var _guid = (item == "x" ? r : (r & 7) | 8).toString(16);
-            return _guid;
-        })
+    function formatDeltaReadReceipt(delta) {
+        return {
+            reader: delta.threadKey.otherUserFbId || delta.actorFbId,
+            time: delta.actionTimestampMs,
+            threadID: formatID(delta.threadKey.otherUserFbId || delta.threadKey.threadFbId),
+            type: "read_receipt"
+        };
     }
 
-    function getTime(format = 'HH:mm:ss DD/MM/YYYY') {
-        const _moment = require("moment-timezone").tz("Asia/Ho_Chi_Minh");
-        return _moment.format(format)
+    function waitForTimeout(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     return {
-        includes,
         getType,
-        getFrom,
-        getTime,
         getGUID,
-        formatID,
+        getFrom,
         padZeros,
-        formatCookie,
+        includes,
+        readLine,
+        formatID,
+        buffer2json,
         makeParsable,
+        formatCookie,
+        getExtension,
         makeCallback,
         getSignatureID,
+        waitForTimeout,
         binaryToDecimal,
-        formatDeltaEvent,
         isReadableStream,
+        formatDeltaEvent,
         _formatAttachment,
         formatDeltaMessage,
         decodeClientPayload,
         generateThreadingID,
         formatDeltaReadReceipt,
-        getAdminTextMessageType,
         generateTimestampRelative,
-        generateOfflineThreadingID
+        generateOfflineThreadingID,
     }
 }

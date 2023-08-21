@@ -1,5 +1,4 @@
-module.exports = function({ requestDefaults, globalOptions, utils, log }) {
-    var { _formatAttachment, makeCallback } = utils;
+module.exports = function({ browser, client, utils }) {
     const colors = [
         {
             theme_color: 'FF000000',
@@ -583,7 +582,7 @@ module.exports = function({ requestDefaults, globalOptions, utils, log }) {
                         data.blob_attachments.length.map(att => {
                             var x;
                             try {
-                                x = _formatAttachment(att);
+                                x = utils._formatAttachment(att);
                             } catch (ex) {
                                 x = att;
                                 x.error = ex;
@@ -622,10 +621,10 @@ module.exports = function({ requestDefaults, globalOptions, utils, log }) {
     }
 
     return async function(threadID, messageID, callback) {
-        if (!callback) callback = makeCallback();
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         if (!threadID || !messageID) callback('Need threadID and messageID.', null);
         var form = {
-            "av": globalOptions.pageID,
+            "av": client.configs.pageID,
 			"queries": JSON.stringify({
 				"o0": {
 					"doc_id": "1768656253222505",
@@ -638,10 +637,9 @@ module.exports = function({ requestDefaults, globalOptions, utils, log }) {
 				}
 			})
         }
-        var response = await requestDefaults.post('https://www.facebook.com/api/graphqlbatch/', form);
+        var response = await browser.post('https://www.facebook.com/api/graphqlbatch/', form);
         if (!response || response.error) return callback(response, null);
         var data = response[0].o0.data.message;
-        if (data) return callback(null, formatMessage(threadID, data));
-        return callback(response);
+        return data ? callback(null, formatMessage(threadID, data)) : callback(response);
     }
 }

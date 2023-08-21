@@ -12,11 +12,14 @@ const colors = {
 const allowProperties = Object.keys(colors);
 
 function getTime(format) {
-	const _moment = require("moment-timezone").tz("Asia/Ho_Chi_Minh");
-    return format ? _moment.format(format) : _moment.format("HH:mm:ss DD/MM/YYYY");
+	let moment = require("moment-timezone").tz("Asia/Ho_Chi_Minh");
+    return moment.format(format || "HH:mm:ss DD/MM/YYYY");
 }
 
 module.exports = function(type, data, color) {
-    color = color ? allowProperties.includes(color) ? color : 'default' : 'default';
-    return console.log(colors[color].replace(/%type/g, type || 'Meta API').replace(/%hours/g, getTime('HH:mm:ss')).replace(/%data/g, data));
+    color = color && allowProperties.includes(color) ? color : 'default';
+    return console.log(colors[color]
+    .replace(/%type/g, type || 'Meta API')
+    .replace(/%hours/g, getTime('HH:mm:ss'))
+    .replace(/%data/g, data));
 }

@@ -1,13 +1,12 @@
-module.exports = function({ requestDefaults, utils }) {
-    var { makeCallback } = utils;
+module.exports = function({ browser, utils }) {
     return async function(userID, callback) {
-        if (!callback) callback = makeCallback();
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         if (!Array.isArray(userID)) userID = [userID];
         var form = {}, obj = {};
         userID.map(function(v, i) {
             form['ids[' + i + ']'] = v;
         })
-        var response = await requestDefaults.post('https://www.facebook.com/chat/user_info/', form);
+        var response = await browser.post('https://www.facebook.com/chat/user_info/', form);
         if (!response || response.error) return callback(response, null);
         for (let prop in response.payload.profiles) {
             var innerObj = response.payload.profiles[prop];

@@ -1,7 +1,9 @@
 {
   "name": "@hoahenry/meta-api",
-  "version": "1.2.21",
-  "description": "Meta API",
+  "version": "1.3.1",
+  "author": "HoaHenry",
+  "description": "This is an unofficial API for Meta (Facebook - Facebook Messenger)",
+  "license": "MIT",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,15 +16,15 @@
     "API",
     "BOT",
     "Meta",
+    "Meta API",
     "Facebook",
     "Chat Bot",
     "Mesenger",
     "Henry",
     "Facebook API",
-    "facebook-chat-api"
+    "facebook-chat-api",
+    "fb-chat-api"
   ],
-  "author": "Henry",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/hoahenry/meta-api/issues"
   },
@@ -30,11 +32,10 @@
   "dependencies": {
     "bluebird": "^3.7.2",
     "cheerio": "^1.0.0-rc.12",
-    "moment-timezone": "^0.5.41",
+    "moment-timezone": "^0.5.43",
     "mqtt": "^4.3.7",
     "readline-sync": "^1.4.10",
     "request": "^2.88.2",
-    "semver": "^7.3.8",
     "websocket-stream": "^5.5.2"
   }
 }

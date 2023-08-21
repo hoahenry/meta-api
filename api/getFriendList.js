@@ -13,7 +13,6 @@ module.exports = function({ requestDefaults, utils, Cli }) {
         10: "neuter_plural",
         11: "unknown_plural"
     };
-    var { makeCallback, formatID } = utils;
     function formatData(obj) {
         return Object.keys(obj).map(function (key) {
             var user = obj[key];
@@ -21,7 +20,7 @@ module.exports = function({ requestDefaults, utils, Cli }) {
                 alternateName: user.alternateName,
                 firstName: user.firstName,
                 gender: GENDERS[user.gender],
-                userID: formatID(user.id.toString()),
+                userID: utils.formatID(user.id.toString()),
                 isFriend: user.is_friend != null && user.is_friend ? true : false,
                 fullName: user.name,
                 profilePicture: user.thumbSrc,
@@ -34,9 +33,8 @@ module.exports = function({ requestDefaults, utils, Cli }) {
     }
 
     return async function(callback) {
-        if (!callback || !Function.isFunction(callback)) callback = makeCallback();
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         let response = await requestDefaults.postFormData('https://www.facebook.com/chat/user_info_all', { viewer: Cli.userID });
-        if (!response || response.error) return callback(response, null);
-        return callback(null, formatData(response.payload));
+        return !response || response.error ? callback(response) : callback(null, formatData(response.payload));
     }
 }

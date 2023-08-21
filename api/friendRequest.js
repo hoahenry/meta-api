@@ -1,4 +1,4 @@
-module.exports = function friendRequest({ requestDefaults, utils, Cli }) {
+module.exports = function friendRequest({ browser, utils, client }) {
     const { makeCallback, includes } = utils;
     function getForm(userID, requestType) {
         var getType = {
@@ -18,7 +18,7 @@ module.exports = function friendRequest({ requestDefaults, utils, Cli }) {
             input: {
                 friend_requester_id: userID,
                 source: '/profile.php',
-                actor_id: Cli.userID,
+                actor_id: client.userID,
                 client_mutation_id: Math.round(Math.random() * 19).toString()
             },
             scale: 1
@@ -27,7 +27,7 @@ module.exports = function friendRequest({ requestDefaults, utils, Cli }) {
             input: {
                 friend_requester_id: userID,
                 source: "/profile.php",
-                actor_id: Cli.userID,
+                actor_id: client.userID,
                 client_mutation_id: Math.round(Math.random() * 19).toString()
             },
             scale: 1,
@@ -38,7 +38,7 @@ module.exports = function friendRequest({ requestDefaults, utils, Cli }) {
             input: {
                 cancelled_friend_requestee_id: userID,
                 source: "profile",
-                actor_id: Cli.userID,
+                actor_id: client.userID,
                 client_mutation_id: Math.round(Math.random() * 19).toString()
             },
             scale: 1
@@ -49,7 +49,7 @@ module.exports = function friendRequest({ requestDefaults, utils, Cli }) {
                 refs: [null],
                 source: "profile_button",
                 warn_ack_for_ids: [],
-                actor_id: Cli.userID,
+                actor_id: client.userID,
                 client_mutation_id: Math.round(Math.random() * 19).toString()
             },
             scale: 1
@@ -57,12 +57,11 @@ module.exports = function friendRequest({ requestDefaults, utils, Cli }) {
         return formData;
     }
     return async function(userID, type, callback) {
-        if (!callback || !Function.isFunction(callback)) callback = makeCallback();
-        if (!userID || !includes(userID, 'String', 'Number')) return callback('Please pass a userID in the first arguments');
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
+        if (!userID || !utils.includes(userID, 'String', 'Number')) return callback('Please pass a userID in the first arguments');
         if (!type || !['accept', 'delete', 'send', 'cancel'].includes(type)) return callback('Please pass a type in the second arguments. Type must be "accept", "delete", "cancel" or "send"');
         let form = getForm(userID, type);
-        var response = await requestDefaults.post('https://www.facebook.com/api/graphql/', form);
-        if (!response || response.error) return callback(response);
-        return callback(null, response);
+        var response = await browser.post('https://www.facebook.com/api/graphql/', form);
+        return !response || response.error ? callback(response) : callback(null);
     }
 }

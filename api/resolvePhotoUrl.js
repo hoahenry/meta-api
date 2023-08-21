@@ -1,10 +1,7 @@
-module.exports = function({ requestDefaults, utils }) {
-    var { makeCallback } = utils;
+module.exports = function({ browser, utils }) {
     return async function(photoID, callback) {
-        if (!callback) callback = makeCallback();
-        var response = await requestDefaults.get('https://www.facebook.com/mercury/attachments/photo', { photo_id: photoID });
-        if (!response || response.error) return callback(response, null)
-        var photoUrl = resData.jsmods.require[0][3][0];
-        return callback(null, photoUrl);
+        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
+        var response = await browser.get('https://www.facebook.com/mercury/attachments/photo', { photo_id: photoID });
+        return !response || response.error ? callback(response) : callback(null, resData.jsmods.require[0][3][0]);
     }
 }
