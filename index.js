@@ -18,7 +18,7 @@ var log = require('./log');
 var cheerio = require('cheerio');
 var { readdirSync } = require('fs');
 var utils = require('./utils') ({ client, log });
-var request = require('./request.js') ({ client, utils, log });
+var request = require('./request') ({ client, utils, log });
 
 function setConfigs(configs) {
     var allowedProperties = Object.keys(client.configs), clientConfigProperties = Object.keys(configs);
@@ -29,7 +29,7 @@ function setConfigs(configs) {
 module.exports.checkUpdate = async function checkUpdate(allowUpdate) {
     var { version } = require('./package.json');
     var { lt: versionChecker } = require('semver');
-    var { body } = await requestMaker.get('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
+    var { body } = await request('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
     var { version: newestVersion } = JSON.parse(body);
     if (versionChecker(version, newestVersion)) {
         log('Update', 'There is a newer version of Meta-API available', 'warn');
@@ -112,8 +112,8 @@ module.exports = async function login({ cookies, email, password, configs}, call
 
     log('Login', 'Creating an environment variable for the account...', 'magenta');
     let browser = request.makeAccountBrowser(body);
-    let apiName = readdirSync('./api/').map(name => name.replace(/\.js/, '')), api = {};
-    for (let name of apiName) api[name] = require('./api/' + name) ({ browser, request, client, log, api, utils });
+    let apiName = readdirSync(__dirname + '/api/').map(name => name.replace(/\.js/, '')), api = {};
+    for (let name of apiName) api[name] = require(__dirname + '/api/' + name) ({ browser, request, client, log, api, utils });
 
     return callback(null, api);
 }
