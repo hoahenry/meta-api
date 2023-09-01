@@ -406,8 +406,8 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
             }
         });
 
-        client.mqtt.on('message', function(topic, message, _packet) {
-            let data = utils.buffer2json(message);
+        client.mqtt.on('message', async function(topic, message, _packet) {
+            let data = await utils.buffer2json(message);
             
             if (data.type === 'jewel_requests_add') {
                 return callback(null, {
