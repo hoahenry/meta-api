@@ -1,14 +1,13 @@
 var client = {
     configs: {
-        pageID: null,
-        selfListen: true,
-        selfListenEvents: true,
+        selfListen: false,
+        selfListenEvents: false,
         listenEvents: true,
         listenTyping: false,
         updatePresence: false,
         readReceipt: false,
         autoMarkRead: false,
-        onlineStatus: true,
+        onlineStatus: false,
         emitReady: true,
         autoReconnect: true,
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
@@ -23,13 +22,13 @@ var request = require('./request') ({ client, utils, log });
 function setConfigs(configs) {
     var allowedProperties = Object.keys(client.configs), clientConfigProperties = Object.keys(configs);
     if (clientConfigProperties.some(item => !allowedProperties.includes(item))) log('setConfigs', 'Unrecognized option given to setOptions: ' + clientConfigProperties.filter(item => !allowedProperties.includes(item)).join(', '));
-    clientConfigProperties.filter(item => allowedProperties.includes(item)).forEach(item => client.configs[item] = options[item]);
+    clientConfigProperties.filter(item => allowedProperties.includes(item)).forEach(item => client.configs[item] = configs[item]);
 }
 
 module.exports.checkUpdate = async function checkUpdate(allowUpdate) {
     var { version } = require('./package.json');
     var { lt: versionChecker } = require('semver');
-    var { body } = await request('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
+    var { body } = await request.get('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
     var { version: newestVersion } = JSON.parse(body);
     if (versionChecker(version, newestVersion)) {
         log('Update', 'There is a newer version of Meta-API available', 'warn');
@@ -41,7 +40,7 @@ module.exports.checkUpdate = async function checkUpdate(allowUpdate) {
     }
 }
 
-module.exports = async function login({ cookies, email, password, configs}, callback) {
+module.exports = async function login({ cookies, email, password, configs }, callback) {
     if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
     if (configs) setConfigs(configs);
     if (cookies) {
@@ -53,7 +52,7 @@ module.exports = async function login({ cookies, email, password, configs}, call
         }
     } else {
         log('Login', 'Logging in with email and password...', 'magenta');
-        var { body } = await request('https://m.facebook.com/login');
+        var { body } = await request('https://www.facebook.com/login');
         var $ = cheerio.load(body), arrayForm = [], formData = {};
         $('#login_form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
         for (let i of arrayForm) if (i.value) formData[i.name] = i.value;
@@ -95,12 +94,12 @@ module.exports = async function login({ cookies, email, password, configs}, call
             }
         }
     }
-    var { body, headers } = await request('https://m.facebook.com/');
+    var { body } = await request('https://www.facebook.com/');
     
-    var strAppID = body.match(/appID:\s*?(\d*)/), strWssEndpoint = body.match(/"(wss:\/\/.+?)"/), strPollingEndpoint = body.match(/pollingEndpoint:\s*?"(.+?)"/), strIrisSeqID = body.match(/irisSeqID:\s*?"(.+?)"/);
+    var strAppID = body.match(/"?appID"?:\s*?"?(\d*)"?/), strWssEndpoint = body.match(/"(wss:.+?)"/), strPollingEndpoint = body.match(/"?pollingEndpoint"?:\s*?"(.+?)"/), strIrisSeqID = body.match(/"?irisSeqID"?:\s*?"(.+?)"|"?iris_seq_id"?:"(.+?)"/);
     if (strAppID) client.appID = strAppID[1];
-    if (strPollingEndpoint) client.pollingEndpoint = strPollingEndpoint[1];
-    if (strWssEndpoint) client.wssEndPoint = strWssEndpoint[1];
+    if (strPollingEndpoint) client.pollingEndpoint = strPollingEndpoint[1].replace(/\\/g, '');
+    if (strWssEndpoint) client.wssEndPoint = strWssEndpoint[1].replace(/\\/g, '');
     if (strIrisSeqID) client.irisSeqID = strIrisSeqID[1];
     if (client.MQTT || client.pollingEndpoint) client.region = client.MQTT ? client.MQTT.replace(/(.+)region=/g, '') : client.pollingEndpoint.replace(/(.+)region=/g, '');
     
@@ -108,11 +107,11 @@ module.exports = async function login({ cookies, email, password, configs}, call
     if (cookie.length == 0) return callback('Error retrieving user ID, login your account with browser to check and try again.', null);
     client.userID = cookie[0].cookieString().split("=")[1].toString();
     log('Login', 'Logged in with userID: ' + client.userID, 'magenta');
-    log('Login', `Your MQTT Region: ${client.region ? client.region.toUpperCase() : 'Not Found.'}`, 'magenta');
+    log('Login', client.region ? `Your MQTT Region: ${client.region.toUpperCase()}` : `Cannot get MQTT region.`, 'magenta');
 
     log('Login', 'Creating an environment variable for the account...', 'magenta');
     let browser = request.makeAccountBrowser(body);
-    let apiName = readdirSync(__dirname + '/api/').map(name => name.replace(/\.js/, '')), api = {};
+    let apiName = readdirSync(__dirname + '/api/').filter(name => name.endsWith('.js')).map(name => name.replace(/\.js/, '')), api = {};
     for (let name of apiName) api[name] = require(__dirname + '/api/' + name) ({ browser, request, client, log, api, utils });
 
     return callback(null, api);

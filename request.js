@@ -1,4 +1,5 @@
-const request = require('bluebird').promisify(require('request').defaults({ jar: true }));
+var bluebird = require('bluebird');
+const request = bluebird.promisify(require('request').defaults({ jar: true }));
 const jar = request.jar();
 
 module.exports = function({ client, utils, log }) {
@@ -15,7 +16,7 @@ module.exports = function({ client, utils, log }) {
         }
     }
     
-    function get(url, options = {}, queryString = {}) {
+    function get(url, options = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, queryString = {}) {
         options = Object.assign(options, {
             headers: getHeader(url, options.headers),
             timeout: 60000,
@@ -28,15 +29,15 @@ module.exports = function({ client, utils, log }) {
         return request(options).then(saveCookies);
     }
 
-    function post(url, form = {}, options = {}, queryString = {}) {
+    function post(url, form = {}, options = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, queryString = {}) {
         options = Object.assign(options, {
             headers: getHeader(url, options.headers),
             timeout: 60000,
+            queryString: queryString || {},
             url,
             method: 'POST',
             jar,
-            gzip: true,
-            qs: queryString
+            gzip: true
         })
         if (options.headers && options.headers['Content-Type'] && options.headers['Content-Type'] === 'multipart/form-data') options.formData = form;
         else options.form = form;
@@ -54,6 +55,8 @@ module.exports = function({ client, utils, log }) {
 
     function makeAccountBrowser(html) {
         var { userID } = client, reqCounter = 1, fb_dtsg = utils.getFrom(html, 'name="fb_dtsg" value="', '"'), ttstamp = '2', revision = utils.getFrom(html, 'revision":', ',');
+        if (!fb_dtsg) fb_dtsg = utils.getFrom(html, '["DTSGInitData",[],{"token":"', '"');
+        if (!fb_dtsg) fb_dtsg = utils.getFrom(html, '"DTSGInitData":{"token":"', '"');
         for (let i = 0; i < fb_dtsg.length; i++) ttstamp += fb_dtsg.charCodeAt(i);
         function mergeWithDefaults(obj) {
             return {
@@ -67,13 +70,13 @@ module.exports = function({ client, utils, log }) {
             }
         }
         function _get(url, options = {}, queryString = {}) {
-            return get(url, options, mergeWithDefaults(queryString)).then(parseAndCheckLogin({ get: _get, post: _post, postFormData: _postFormData }));
+            return get(url, options, mergeWithDefaults(queryString)).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }));
         }
-        function _post(url, form = {}, options = {}, queryString = {}) {
-            return post(url, mergeWithDefaults(form), options, queryString).then(parseAndCheckLogin({ get: _get, post: _post, postFormData: _postFormData }));
+        function _post(url, form = {}, options = {}) {
+            return post(url, mergeWithDefaults(form), options).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }));
         }
         function _postFormData(url, form = {}, options = { headers: { "Content-Type": "multipart/form-data" } }, queryString = {}) {
-            return post(url, mergeWithDefaults(form), options, mergeWithDefaults(queryString)).then(parseAndCheckLogin({ get: _get, post: _post, postFormData: _postFormData }));
+            return post(url, mergeWithDefaults(form), options, mergeWithDefaults(queryString)).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }));
         }
         return {
             get: _get,
@@ -82,7 +85,7 @@ module.exports = function({ client, utils, log }) {
         }
     }
 
-    function parseAndCheckLogin(browser, retryCount = 0) {
+    function checkAccountStatus(browser, retryCount = 0) {
         return async function(data) {
             try {
                 if (data.statusCode >= 500 && data.statusCode < 600) {
@@ -91,19 +94,19 @@ module.exports = function({ client, utils, log }) {
                     var retryTime = Math.floor(Math.random() * 5000);
                     var url = data.request.uri.protocol + "//" + data.request.uri.hostname + data.request.uri.pathname;
                     await utils.waitForTimeout(retryTime);
-                    if (data.request.headers['Content-Type'].split(';')[0] === 'multipart/form-data') return browser.postFormData(url, data.request.formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(parseAndCheckLogin(browser, retryCount));
-                    else return browser.post(url, data.request.formData, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).then(parseAndCheckLogin(browser, retryCount));
+                    if (data.request.headers['Content-Type'].split(';')[0] === 'multipart/form-data') return browser.postFormData(url, data.request.formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(checkAccountStatus(browser, retryCount));
+                    else return browser.post(url, data.request.formData, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).then(checkAccountStatus(browser, retryCount));
                 }
                 if (data.statusCode !== 200) throw new Error(`Got status code: ${data.statusCode}. Bailing out of trying to parse response.`);
                 var res = JSON.parse(utils.makeParsable(data.body));
                 if (res.error === 1357001) throw new Error('Not logged in.');
-                if (res.redirect && res.request.method === 'GET') return browser.get(res.redirect).then(parseAndCheckLogin(browser));
+                if (res.redirect && res.request.method === 'GET') return browser.get(res.redirect).then(checkAccountStatus(browser));
                 if (res.jsmods && res.jsmods.require && Array.isArray(res.jsmods.require[0]) && res.jsmods.require[0][0] === 'Cookie') {
                     res.jsmods.require[0][3][0] = res.jsmods.require[0][3][0].replace("_js_", "");
                     var facebookCookie = utils.formatCookie(res.jsmods.require[0][3], "facebook");
                     var messengerCookie = utils.formatCookie(res.jsmods.require[0][3], "messenger");
-                    cookieJar.setCookie(facebookCookie, 'https://www.facebook.com');
-                    cookieJar.setCookie(messengerCookie, 'https://www.messenger.com');
+                    jar.setCookie(facebookCookie, 'https://www.facebook.com');
+                    jar.setCookie(messengerCookie, 'https://www.messenger.com');
                     res.jsmods.require.forEach(function(item) {
                         if (item[0] === 'DSTG' && item[1] === 'setToken') {
                             client.fb_dtsg = item[3][0];

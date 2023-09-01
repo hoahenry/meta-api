@@ -60,10 +60,12 @@ module.exports = function({ client }) {
         })
     }
 
-    function buffer2json(buffer, callback) {
+    function buffer2json(data, callback) {
         try {
-            if (!Buffer.isBuffer(buffer)) throw new Error('!Buffer');
-            var b2s = Buffer.from(buffer).toString();
+            if (!callback || !Function.isFunction(callback)) callback = makeCallback();
+            if (!Buffer.isBuffer(data)) throw new Error('!Buffer');
+            var b2s = Buffer.from(data).toString('utf-8');
+            if ((!b2s.startsWith('{') || !b2s.startsWith('[')) && (!b2s.endsWith(']') || b2s.endsWith('}'))) throw new Error('!Json')
             return callback(null, JSON.parse(b2s));
         } catch (error) {
             return callback(error, null);

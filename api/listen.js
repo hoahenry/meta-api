@@ -1,11 +1,10 @@
 const mqtt = require('mqtt');
-const { writeFileSync } = require('fs');
 const ws = require('websocket-stream');
 
 module.exports = function ({ request, browser, utils, client, api, log }) {
     function getForm(docID, queryParams) {
         return {
-            av: client.configs.pageID,
+            av: client.configs?.pageID,
             queries: JSON.stringify({
                 o0: {
                     doc_id: docID,
@@ -15,17 +14,21 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
         }
     }
     async function getSeqID(callback) {
-        if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        var response = await browser.post('https://www.facebook.com/api/graphqlbatch/', getForm('3336396659757871', {
-            "limit": 1,
-            "before": null,
-            "tags": ["INBOX"],
-            "includeDeliveryReceipts": false,
-            "includeSeqID": true
-        }));
-        if (!Array.isArray(response)) return callback('Not logged in.');
-        client.irisSeqID = response[0].o0.data.viewer.message_threads.sync_sequence_id;
-        return callback();
+        try {
+            if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
+            var response = await browser.post('https://www.facebook.com/api/graphqlbatch/', getForm('3336396659757871', {
+                "limit": 1,
+                "before": null,
+                "tags": ["INBOX"],
+                "includeDeliveryReceipts": false,
+                "includeSeqID": true
+            }));
+            if (!Array.isArray(response)) throw new Error('Not logged in.');
+            client.irisSeqID = response[0].o0.data.viewer.message_threads.sync_sequence_id;
+            return callback();
+        } catch (error) {
+            return callback(error);
+        }
     }
 
     async function parseDelta(callback, deltas) {
@@ -43,9 +46,9 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                     }
                     var formatMessage = utils.formatDeltaMessage(deltas);
                     if (client.configs.autoMarkRead && formatMessage.senderID !== client.userID) api.markRead(formatMessage.threadID);
-                    if (client.configs.selfListen || !client.configs.selfListen && formatMessage.senderID !== client.userID) callback(null, formatMessage);
+                    if (client.configs.selfListen || !client.configs.selfListen && formatMessage.senderID !== client.userID) return callback(null, formatMessage);
                 } catch (error) {
-                    callback(error, null);
+                    return callback(error, null);
                 }
                 break;
             }
@@ -301,7 +304,7 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
     return async function listen(callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         var sessionID = Math.floor(Math.random() * 9007199254740991) + 1;
-        var cookies = request.jar.getCookies('https://www.facebook.com').join('; ');
+        var cookies = request.jar.getCookies('https://www.facebook.com').concat(request.jar.getCookies('https://www.messenger.com')).join('; ');
         var host = client.wssEndPoint ? client.wssEndPoint + '&sid=' + sessionID : client.region ? `wss://edge-chat.facebook.com/chat?region=${client.region.toLocaleLowerCase()}&sid=${sessionID}` : `wss://edge-chat.facebook.com/chat?sid=${sessionID}`;
         var options = {
             clientId: "mqttwsclient",
@@ -341,10 +344,11 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
             reschedulePings: false
         };
 
+        if (!client.irisSeqID) await getSeqID();
+
         client.mqtt = new mqtt.Client(_ => ws(host, options.wsOptions), options);
         
         client.mqtt.on('error', function (error) {
-            console.log(error)
             client.mqtt.removeAllListeners();
             if (client.configs.autoReconnect) {
                 log('LISTENER', 'Got an error. AutoReconnect is enable, starting reconnect...', 'warn');
@@ -356,18 +360,25 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
         });
 
         client.mqtt.on('connect', function () {
-            client.mqtt.subscribe('#')
+            client.mqtt.subscribe('#');
             var queue = {
                 sync_api_version: 10,
                 max_deltas_able_to_process: 1000,
                 delta_batch_size: 500,
                 encoding: "JSON",
-                entity_fbid: client.userID,
-                initial_titan_sequence_id: client.irisSeqID,
-                device_params: null
+                entity_fbid: client.userID
             };
 
-            client.mqtt.publish('/messenger_sync_create_queue', JSON.stringify(queue), { qos: 1 });
+            if (client.syncToken) {
+                queue.last_seq_id = client.irisSeqID;
+                queue.sync_token = client.syncToken;
+                client.mqtt.publish('/messenger_sync_get_diffs', JSON.stringify(queue), { qos: 1 });
+            } else {
+                queue.initial_titan_sequence_id = client.irisSeqID;
+                queue.device_params = null;
+                client.mqtt.publish('/messenger_sync_create_queue', JSON.stringify(queue), { qos: 1 });
+            }
+
             client.mqtt.publish("/foreground_state", JSON.stringify({ foreground: client.configs.onlineStatus }), { qos: 1 });
             client.mqtt.publish("/set_client_settings", JSON.stringify({ make_user_available_when_in_foreground: true }), { qos: 1 });
 
@@ -389,57 +400,51 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                     client.mqtt.publish("/browser_close", "{}");
                     client.mqtt.end();
                     delete client.mqtt;
-                    delete api.stopListener;
+                    delete api.disconnect;
                     return log('LISTENER', 'Listener is disconnected.');
                 }
             }
         });
 
         client.mqtt.on('message', function(topic, message, _packet) {
-            try {
-                let b2j = utils.buffer2json(message, (e, d) => e ? Error(e) : d);
-
-                switch (topic) {
-                    case '/t_ms': {
-                        if (client.tmsWait && Function.isFunction(client.tmsWait)) client.tmsWait();
-                        for (var i in b2j.deltas) parseDelta(callback, b2j.deltas[i]);
-                        break;
-                    }
-                    case '/thread_typing':
-                    case '/orca_typing_notifications': {
-                        if (client.configs.listenTyping) {
-                            var typ = {
-                                type: "typ",
-                                isTyping: !!b2j.state,
-                                from: b2j.sender_fbid.toString(),
-                                threadID: utils.formatID((b2j.thread || b2j.sender_fbid).toString())
-                            };
-                            return callback(null, typ);
-                        }
-                        break;
-                    }
-                    case '/orca_presence': {
-                        if (client.configs.updatePresence) {
-                            for (let i of b2j.list) {
-                                callback(null, {
-                                    type: 'presence',
-                                    userID: i['u'].toString(),
-                                    timestamp: i['l'] * 1000,
-                                    statuses: i['p']
-                                });
-                            }
-                        }
-                        break;
-                    }
-                    default: {
-                        console.log(b2j);
-                        callback(b2j);
-                        writeFileSync('./data.error', Date.now() + ': ' + JSON.stringify(b2j) + '\n\n', { flag: 'a+' });
-                        break;
-                    }
+            let data = utils.buffer2json(message);
+            
+            if (data.type === 'jewel_requests_add') {
+                return callback(null, {
+                    type: "friend_request_received",
+                    actorFbId: data.from.toString(),
+                    timestamp: Date.now().toString()
+                })
+            }
+            if (data.type === 'jewel_requests_remove_old') {
+                return callback(null, {
+                    type: "friend_request_cancel",
+                    actorFbId: data.from.toString(),
+                    timestamp: Date.now().toString()
+                })
+            }
+            if (topic === '/t_ms') {
+                if (data.firstDeltaSeqId) client.irisSeqID = data.firstDeltaSeqId;
+                if (data.syncToken) client.syncToken = data.syncToken;
+                if (client.tmsWait && Function.isFunction(client.tmsWait)) client.tmsWait();
+                for (let i in data.deltas) parseDelta(callback, data.deltas[i]);
+            }
+            if ((topic === '/thread_typing' || topic === '/orca_typing_notifications') && client.configs.listenTyping) return callback(null, {
+                type: "typ",
+                isTyping: !!data.state,
+                from: data.sender_fbid.toString(),
+                threadID: utils.formatID((data.thread || data.sender_fbid).toString())
+            });
+            if (topic === '/orca_presence' && client.configs.updatePresence) {
+                let list = [];
+                for (let i of data.list) {
+                    list.push({
+                        type: 'presence',
+                        userID: i['u'].toString(),
+                        timestamp: i['u'] * 1000,
+                        statuses: i['p']
+                    })
                 }
-            } catch (error) {
-                return callback(error, null);
             }
         });
 
