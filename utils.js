@@ -65,7 +65,6 @@ module.exports = function({ client }) {
             if (!callback || !Function.isFunction(callback)) callback = makeCallback();
             if (!Buffer.isBuffer(data)) throw new Error('!Buffer');
             var b2s = Buffer.from(data).toString('utf-8');
-            if ((!b2s.startsWith('{') || !b2s.startsWith('[')) && (!b2s.endsWith(']') || b2s.endsWith('}'))) return callback(null, b2s)
             return callback(null, JSON.parse(b2s));
         } catch (error) {
             return callback(error, null);
