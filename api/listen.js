@@ -429,22 +429,25 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                 if (client.tmsWait && Function.isFunction(client.tmsWait)) client.tmsWait();
                 for (let i in data.deltas) parseDelta(callback, data.deltas[i]);
             }
-            if ((topic === '/thread_typing' || topic === '/orca_typing_notifications') && client.configs.listenTyping) return callback(null, {
-                type: "typ",
-                isTyping: !!data.state,
-                from: data.sender_fbid.toString(),
-                threadID: utils.formatID((data.thread || data.sender_fbid).toString())
-            });
+            if ((topic === '/thread_typing' || topic === '/orca_typing_notifications') && client.configs.listenTyping) {
+                return callback(null, {
+                    type: "typ",
+                    isTyping: !!data.state,
+                    from: data.sender_fbid.toString(),
+                    threadID: utils.formatID((data.thread || data.sender_fbid).toString())
+                });
+            }
             if (topic === '/orca_presence' && client.configs.updatePresence) {
-                let list = [];
-                for (let i of data.list) {
-                    list.push({
-                        type: 'presence',
-                        userID: i['u'].toString(),
-                        timestamp: i['u'] * 1000,
-                        statuses: i['p']
+                return callback(null, {
+                    type: 'presence',
+                    list: data.list.map(value => {
+                        return {
+                            userID: value['u'].toString(),
+                            timestamp: value['u'] * 1000,
+                            statuses: value['p']
+                        }
                     })
-                }
+                });
             }
         });
 
