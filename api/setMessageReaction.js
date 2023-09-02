@@ -2,7 +2,7 @@ module.exports = function({ browser, utils, client }) {
     return async function(reaction, messageID, callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         if (!messageID || !String.isString(messageID)) return callback('Please pass a messageID in the seconds arguments', null);
-        var qs = {
+        var form = {
             doc_id: '1491398900900362',
             variables: JSON.stringify({
                 data: {
@@ -15,7 +15,7 @@ module.exports = function({ browser, utils, client }) {
             }),
             dpr: 1
         }
-        var response = await browser.postFormData('https://www.facebook.com/webgraphql/mutation/', undefined, undefined, qs);
+        var response = await browser.postFormData('https://www.facebook.com/webgraphql/mutation/', form);
         return !response || response.error ? callback(response) : callback(null);
     }
 }

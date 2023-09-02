@@ -69,14 +69,14 @@ module.exports = function({ client, utils, log }) {
                 ...obj
             }
         }
-        function _get(url, options = {}, queryString = {}) {
-            return get(url, options, mergeWithDefaults(queryString)).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }));
+        function _get(url, options = {}, queryString = {}, retry = 0) {
+            return get(url, options, mergeWithDefaults(queryString)).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }, retry));
         }
-        function _post(url, form = {}, options = {}) {
-            return post(url, mergeWithDefaults(form), options).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }));
+        function _post(url, form = {}, options = {}, retry = 0) {
+            return post(url, mergeWithDefaults(form), options).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }, retry));
         }
-        function _postFormData(url, form = {}, options = { headers: { "Content-Type": "multipart/form-data" } }, queryString = {}) {
-            return post(url, mergeWithDefaults(form), options, mergeWithDefaults(queryString)).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }));
+        function _postFormData(url, form = {}, options = { headers: { "Content-Type": "multipart/form-data" } }, queryString = {}, retry = 0) {
+            return post(url, mergeWithDefaults(form), options, mergeWithDefaults(queryString)).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }, retry));
         }
         return {
             get: _get,
@@ -85,17 +85,17 @@ module.exports = function({ client, utils, log }) {
         }
     }
 
-    function checkAccountStatus(browser, retryCount = 0) {
+    function checkAccountStatus(browser, retry) {
         return async function(data) {
             try {
                 if (data.statusCode >= 500 && data.statusCode < 600) {
-                    retryCount++;
-                    if (retryCount === 5) throw new Error(`Got status code: ${data.statusCode}, trial limit exceeded. Bailing out of trying to parse response.`);
+                    retry++;
+                    if (retry === 5) throw new Error(`Got status code: ${data.statusCode}, trial limit exceeded. Bailing out of trying to parse response.`);
                     var retryTime = Math.floor(Math.random() * 5000);
                     var url = data.request.uri.protocol + "//" + data.request.uri.hostname + data.request.uri.pathname;
                     await utils.waitForTimeout(retryTime);
-                    if (data.request.headers['Content-Type'].split(';')[0] === 'multipart/form-data') return browser.postFormData(url, data.request.formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(checkAccountStatus(browser, retryCount));
-                    else return browser.post(url, data.request.formData, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).then(checkAccountStatus(browser, retryCount));
+                    if (data.request.headers['Content-Type'].split(';')[0] === 'multipart/form-data') return browser.postFormData(url, data.request.formData, { headers: { 'Content-Type': 'multipart/form-data' } }, {}, retry);
+                    else return browser.post(url, data.request.formData, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, retry);
                 }
                 if (data.statusCode !== 200) throw new Error(`Got status code: ${data.statusCode}. Bailing out of trying to parse response.`);
                 var res = JSON.parse(utils.makeParsable(data.body));
