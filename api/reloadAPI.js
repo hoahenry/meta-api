@@ -9,6 +9,6 @@ module.exports = function({ browser, request, client, log, api, utils }) {
             if (require.cache[require.resolve(apiPath + name)]) delete require.cache[require.resolve(apiPath + name)];
             api[name] = require(apiPath + name) ({ browser, request, client, log, api, utils });
         }
-        return callback(api);
+        return callback(null, api);
     }
 }
