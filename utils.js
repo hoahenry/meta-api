@@ -548,6 +548,20 @@ module.exports = function({ client }) {
         };
     }
 
+    function getAdminTextMessageType(type) {
+        var form = {
+            change_thread_theme: 'log:thread-color',
+            change_thread_icon: 'log:thread-icon',
+            change_thread_nickname: 'log:user-nickname',
+            change_thread_admins: 'log:thread-admins',
+            group_poll: 'log:thread-poll',
+            change_thread_approval_mode: 'log:thread-approval-mode',
+            messenger_call_log: 'log:thread-call',
+            participant_joined_group_call: 'log:thread-call'
+        }
+        return form[type] || type;
+    }
+
     function isReadableStream(obj) {
         return (obj instanceof stream.Stream && Function.isFunction(obj._read) && Object.isObject(obj._readableState));
     }
