@@ -15,7 +15,7 @@ module.exports = function({ browser, utils, client }) {
             }),
             dpr: 1
         }
-        var response = await browser.postFormData('https://www.facebook.com/webgraphql/mutation/', null, null, qs);
+        var response = await browser.postFormData('https://www.facebook.com/webgraphql/mutation/', undefined, undefined, qs);
         return !response || response.error ? callback(response) : callback(null);
     }
 }
