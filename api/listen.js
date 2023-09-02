@@ -46,9 +46,9 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                     }
                     var formatMessage = utils.formatDeltaMessage(deltas);
                     if (client.configs.autoMarkRead && formatMessage.senderID !== client.userID) api.markRead(formatMessage.threadID);
-                    if (client.configs.selfListen || !client.configs.selfListen && formatMessage.senderID !== client.userID) return callback(null, formatMessage);
+                    if (client.configs.selfListen || formatMessage.senderID !== client.userID) callback(null, formatMessage);
                 } catch (error) {
-                    return callback(error, null);
+                    callback(error, null);
                 }
                 break;
             }
@@ -185,8 +185,8 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                                     timestamp: parseInt(fetchData.timestamp_precise)
                                 };
                             }
-                            if (client.configs.autoMarkRead) api.markRead(callbackToReturn.threadID);
-                            if (client.configs.selfListen || !client.configs.selfListen && callbackToReturn.senderID !== Cli.userID) callback(null, callbackToReturn);
+                            if (client.configs.autoMarkRead && callbackToReturn.senderID !== client.userID) api.markRead(callbackToReturn.threadID);
+                            if (client.configs.selfListen || callbackToReturn.senderID !== client.userID) callback(null, callbackToReturn);
                         }
                     }
                     break;
@@ -230,7 +230,7 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                         if (response[response.length - 1].error_results > 0 || response[response.length - 1].successful_results === 0) return callback(response, null);
                         if (Object.isObject(response)) {
                             if (response.__typename == 'ThreadImageMessage') {
-                                if (client.configs.selfListenEvents && response.message_sender.id == Cli.userID) {
+                                if (client.configs.selfListenEvents || response.message_sender.id !== client.userID) {
                                     callback(null, {
                                         type: "event",
                                         threadID: utils.formatID(tid.toString()),
@@ -410,14 +410,14 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
             let data = await utils.buffer2json(message);
             
             if (data.type === 'jewel_requests_add') {
-                return callback(null, {
+                callback(null, {
                     type: "friend_request_received",
                     actorFbId: data.from.toString(),
                     timestamp: Date.now().toString()
                 })
             }
             if (data.type === 'jewel_requests_remove_old') {
-                return callback(null, {
+                callback(null, {
                     type: "friend_request_cancel",
                     actorFbId: data.from.toString(),
                     timestamp: Date.now().toString()
@@ -430,7 +430,7 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                 for (let i in data.deltas) parseDelta(callback, data.deltas[i]);
             }
             if ((topic === '/thread_typing' || topic === '/orca_typing_notifications') && client.configs.listenTyping) {
-                return callback(null, {
+                callback(null, {
                     type: "typ",
                     isTyping: !!data.state,
                     from: data.sender_fbid.toString(),
@@ -438,7 +438,7 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                 });
             }
             if (topic === '/orca_presence' && client.configs.updatePresence) {
-                return callback(null, {
+                callback(null, {
                     type: 'presence',
                     list: data.list.map(value => {
                         return {
