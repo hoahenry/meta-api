@@ -366,19 +366,12 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                 max_deltas_able_to_process: 1000,
                 delta_batch_size: 500,
                 encoding: "JSON",
-                entity_fbid: client.userID
+                entity_fbid: client.userID,
+                initial_titan_sequence_id: client.irisSeqID,
+                device_params: null
             };
-
-            if (client.syncToken) {
-                queue.last_seq_id = client.irisSeqID;
-                queue.sync_token = client.syncToken;
-                client.mqtt.publish('/messenger_sync_get_diffs', JSON.stringify(queue), { qos: 1 });
-            } else {
-                queue.initial_titan_sequence_id = client.irisSeqID;
-                queue.device_params = null;
-                client.mqtt.publish('/messenger_sync_create_queue', JSON.stringify(queue), { qos: 1 });
-            }
-
+            
+            client.mqtt.publish('/messenger_sync_create_queue', JSON.stringify(queue), { qos: 1 });
             client.mqtt.publish("/foreground_state", JSON.stringify({ foreground: client.configs.onlineStatus }), { qos: 1 });
             client.mqtt.publish("/set_client_settings", JSON.stringify({ make_user_available_when_in_foreground: true }), { qos: 1 });
 
@@ -393,15 +386,15 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                 clearTimeout(reconnectTimeout);
                 if (client.configs.emitReady) log('LISTENER', 'Listener is connected.', 'warn');
                 delete client.tmsWait;
-                api.disconnect = function() {
-                    client.mqtt.unsubscribe("/webrtc");
-                    client.mqtt.unsubscribe("/rtc_multi");
-                    client.mqtt.unsubscribe("/onevc");
+                api.disconnect = function(callback) {
+                    client.mqtt.unsubscribe("#");
                     client.mqtt.publish("/browser_close", "{}");
+                    client.removeAllListeners();
                     client.mqtt.end();
                     delete client.mqtt;
                     delete api.disconnect;
-                    return log('LISTENER', 'Listener is disconnected.');
+                    if (client.configs.emitReady) log('LISTENER', 'Listener is disconnected.', 'warn');
+                    return callback();
                 }
             }
         });
@@ -424,8 +417,6 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                 })
             }
             if (topic === '/t_ms') {
-                if (data.firstDeltaSeqId) client.irisSeqID = data.firstDeltaSeqId;
-                if (data.syncToken) client.syncToken = data.syncToken;
                 if (client.tmsWait && Function.isFunction(client.tmsWait)) client.tmsWait();
                 for (let i in data.deltas) parseDelta(callback, data.deltas[i]);
             }
@@ -455,7 +446,7 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
             client.mqtt.removeAllListeners();
             if (client.configs.emitReady) log('LISTENER', 'Listener is disconnected.', 'warn');
             if (client.configs.autoReconnect) {
-                log('LISTENER', 'Starting reconnect...', 'warn');
+                if (client.configs.emitReady) log('LISTENER', 'Starting reconnect...', 'warn');
                 return getSeqID(function(error) {
                     return error ? callback(error) : listen(callback);
                 });

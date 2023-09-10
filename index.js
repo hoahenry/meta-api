@@ -25,7 +25,7 @@ function setConfigs(configs) {
     clientConfigProperties.filter(item => allowedProperties.includes(item)).forEach(item => client.configs[item] = configs[item]);
 }
 
-module.exports.checkUpdate = async function checkUpdate(allowUpdate) {
+async function checkUpdate(allowUpdate) {
     var { version } = require('./package.json');
     var { lt: versionChecker } = require('semver');
     var { body } = await request.get('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
@@ -40,7 +40,7 @@ module.exports.checkUpdate = async function checkUpdate(allowUpdate) {
     }
 }
 
-module.exports = async function login({ cookies, email, password, configs }, callback) {
+async function login({ cookies, email, password, configs }, callback) {
     if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
     if (configs) setConfigs(configs);
     if (cookies) {
@@ -116,3 +116,8 @@ module.exports = async function login({ cookies, email, password, configs }, cal
 
     return callback(null, api);
 }
+
+module.exports = Object.assign(login, {
+    login,
+    checkUpdate
+})

@@ -117,7 +117,7 @@ module.exports = function({ client, utils, log }) {
                 }
                 return res;
             } catch (error) {
-                return log('Account Status', JSON.stringify({ error: error, html: data }, null, 4), 'error');
+                return log('Account Status', error, 'error');
             }
         }
     }
