@@ -13,13 +13,13 @@ module.exports = function({ browser, client, utils }) {
         return callback(null, results);
     }
     return async function(image, caption = 'API create by HoaHenry\nFacebook: https://facebook.com/s2.henry \nOfficial Website: https://hoahenry.info', timestamp = null, callback) {
-        if (!timestamp && !Number.isNumber(caption)) {
+        if (!timestamp && Number.isNumber(caption)) {
             timestamp = caption;
-            caption = '';
+            caption = 'API create by HoaHenry\nFacebook: https://facebook.com/s2.henry \nOfficial Website: https://hoahenry.info';
         }
         if (!timestamp && !callback && Function.isFunction(caption)) {
             callback = caption;
-            caption = '';
+            caption = 'API create by HoaHenry\nFacebook: https://facebook.com/s2.henry \nOfficial Website: https://hoahenry.info';
             timestamp = null;
         }
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
