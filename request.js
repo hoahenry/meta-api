@@ -100,7 +100,7 @@ module.exports = function({ client, utils, log }) {
                 if (data.statusCode !== 200) throw new Error(`Got status code: ${data.statusCode}. Bailing out of trying to parse response.`);
                 var res = JSON.parse(utils.makeParsable(data.body));
                 if (res.error === 1357001) throw new Error('Not logged in.');
-                if (res.redirect && res.request.method === 'GET') return browser.get(res.redirect).then(checkAccountStatus(browser));
+                if (res.redirect && res.request.method === 'GET') return browser.get(res.redirect);
                 if (res.jsmods && res.jsmods.require && Array.isArray(res.jsmods.require[0]) && res.jsmods.require[0][0] === 'Cookie') {
                     res.jsmods.require[0][3][0] = res.jsmods.require[0][3][0].replace("_js_", "");
                     var facebookCookie = utils.formatCookie(res.jsmods.require[0][3], "facebook");
