@@ -1,7 +1,7 @@
 const mqtt = require('mqtt');
 const ws = require('websocket-stream');
 
-module.exports = function ({ request, browser, utils, client, api, log }) {
+module.exports = function ({ request, browser, utils, client, api, log, Language }) {
     async function getSeqID(callback) {
         try {
             if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
@@ -12,7 +12,7 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                 "includeDeliveryReceipts": false,
                 "includeSeqID": true
             }));
-            if (!Array.isArray(response)) throw new Error('Not logged in.');
+            if (!Array.isArray(response)) throw new Error(Language('listen', 'notLoggedIn'));
             client.irisSeqID = response[0].o0.data.viewer.message_threads.sync_sequence_id;
             return callback();
         } catch (error) {
@@ -70,7 +70,7 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
         client.mqtt.on('error', function (error) {
             client.mqtt.removeAllListeners();
             if (client.configs.autoReconnect) {
-                log('LISTENER', 'Got an error. AutoReconnect is enable, starting reconnect...', 'warn');
+                log('LISTENER', Language('listen', 'reconnectWithAnError'), 'warn');
                 return getSeqID(function(error) {
                     return error ? callback(error) : listen(callback);
                 });
@@ -103,7 +103,7 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
 
             client.tmsWait = function() {
                 clearTimeout(reconnectTimeout);
-                if (client.configs.emitReady) log('LISTENER', 'Listener is connected.', 'warn');
+                if (client.configs.emitReady) log('LISTENER', Language('listen', 'connected'), 'warn');
                 delete client.tmsWait;
                 api.disconnect = function(callback) {
                     client.mqtt.unsubscribe("#");
@@ -112,7 +112,7 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
                     client.mqtt.end();
                     delete client.mqtt;
                     delete api.disconnect;
-                    if (client.configs.emitReady) log('LISTENER', 'Listener is disconnected.', 'warn');
+                    if (client.configs.emitReady) log('LISTENER', Language('listen', 'disconnected'), 'warn');
                     return callback();
                 }
             }
@@ -137,7 +137,7 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
             }
             if (topic === '/t_ms') {
                 if (client.tmsWait && Function.isFunction(client.tmsWait)) client.tmsWait();
-                for (let i in data.deltas) utils.parseDelta({ browser, api, callback, deltas: data.deltas[i] });
+                for (let i in data.deltas) utils.parseDelta({ browser, api, callback, deltas: data.deltas[i], Language });
             }
             if ((topic === '/thread_typing' || topic === '/orca_typing_notifications') && client.configs.listenTyping) {
                 callback(null, {
@@ -163,9 +163,9 @@ module.exports = function ({ request, browser, utils, client, api, log }) {
 
         client.mqtt.on('close', function () {
             client.mqtt.removeAllListeners();
-            if (client.configs.emitReady) log('LISTENER', 'Listener is disconnected.', 'warn');
+            if (client.configs.emitReady) log('LISTENER', Language('listen', 'connected'), 'warn');
             if (client.configs.autoReconnect) {
-                if (client.configs.emitReady) log('LISTENER', 'Starting reconnect...', 'warn');
+                if (client.configs.emitReady) log('LISTENER', Language('listen', 'reconnect'), 'warn');
                 return getSeqID(function(error) {
                     return error ? callback(error) : listen(callback);
                 });

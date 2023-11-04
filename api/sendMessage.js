@@ -1,4 +1,4 @@
-module.exports = function({ browser, client, utils }) {
+module.exports = function({ browser, client, utils, Language }) {
     var allowedProperties = ['attachments', 'url', 'sticker', 'emoji', 'emojiSize', 'body', 'mentions', 'location'];
 
     async function uploadAttachments(attachment, callback) {
@@ -6,7 +6,7 @@ module.exports = function({ browser, client, utils }) {
             if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
 
             let uploads = attachment.map(async function(item) {
-                if (!utils.isReadableStream(item)) throw new Error('Attachment should be a readable stream.');
+                if (!utils.isReadableStream(item)) throw new Error(Language('sendMessage', 'isReadable'));
                 let formData = {
                     voice_clip: 'true',
                     upload_1024: item
@@ -69,10 +69,10 @@ module.exports = function({ browser, client, utils }) {
             replyToMessage = '';
         }
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        if (!String.isString(message) && !Object.isObject(message)) return callback(`Message must be String or Object. Receive: ${utils.getType(message)}`);
-        if (!Array.isArray(threadID) && !utils.includes(threadID, 'Number', 'String')) return callback(`ThreadID must be Number, String or Array. Receive: ${utils.getType(threadID)}`);
+        if (!String.isString(message) && !Object.isObject(message)) return callback(Language('sendMessage', 'errorMessageType', utils.getType(message)));
+        if (!Array.isArray(threadID) && !utils.includes(threadID, 'Number', 'String')) return callback(Language('sendMessage', 'errorThreadIDType', utils.getType(threadID)));
         let disallowedProperties = Object.keys(message).filter(prop => !allowedProperties.includes(prop));
-        if (disallowedProperties.length > 0) return callback('Dissallowed props: ' + disallowedProperties.join(', '));
+        if (disallowedProperties.length > 0) return callback(Language('sendMessage', 'propertyDisable', disallowedProperties.join(', ')));
         let messageAndOTID = utils.generateOfflineThreadingID();
         var form = {
             client: "mercury",
@@ -107,7 +107,7 @@ module.exports = function({ browser, client, utils }) {
             replied_to_message_id: replyToMessage
         };
         if (message.location) {
-            if (message.location.latitude == null || message.location.longitude == null) return callback('Location property needs both latitude and longitude');
+            if (message.location.latitude == null || message.location.longitude == null) return callback(Language('sendMessage', 'wrongLocation'));
             form["location_attachment[coordinates][latitude]"] = message.location.latitude;
             form["location_attachment[coordinates][longitude]"] = message.location.longitude;
             form["location_attachment[is_current_location]"] = !!message.location.current;
@@ -115,14 +115,14 @@ module.exports = function({ browser, client, utils }) {
         if (message.sticker) form["sticker_id"] = message.sticker;
         if (message.emoji) {
             if (!message.emojiSize) message.emojiSize = 'medium';
-            if (form['body'] && form['body'] !== null) return callback('Body is not Empty', null);
+            if (form['body'] && form['body'] !== null) return callback(Language('sendMessage', 'bodyNotEmpty'), null);
             form['body'] = message.emoji;
             form["tags[0]"] = "hot_emoji_size:" + message.emojiSize;
         }
         if (message.mentions) {
             message.mentions.forEach((item, index) => {
-                if (!String.isString(item.tag)) return callback('Mention tags must be String');
-                if (!message.body.includes(item.tag)) return callback('Mention for ' + item.tag + 'not found in message');
+                if (!String.isString(item.tag)) return callback(Language('sendMessage', 'errorTagType', utils.getType(item.tag)));
+                if (!message.body.includes(item.tag)) return callback(Language('sendMessage', 'notFoundTagString', item.tag));
                 form["profile_xmd[" + index + "][offset]"] = message.body.indexOf(item.tag);
                 form["profile_xmd[" + index + "][length]"] = item.tag.length;
                 form["profile_xmd[" + index + "][id]"] = item.id || item.ID || item.userID || 0;

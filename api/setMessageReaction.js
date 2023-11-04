@@ -1,7 +1,7 @@
-module.exports = function({ browser, utils, client }) {
+module.exports = function({ browser, utils, client, Language }) {
     return async function(reaction, messageID, callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        if (!messageID || !String.isString(messageID)) return callback('Please pass a messageID in the seconds arguments', null);
+        if (!messageID || !String.isString(messageID)) return callback(Language('setMessageReaction', 'needMessageID'), null);
         var form = {
             doc_id: '1491398900900362',
             variables: JSON.stringify({

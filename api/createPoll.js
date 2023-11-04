@@ -1,7 +1,7 @@
-module.exports = function({ browser, utils }) {
+module.exports = function({ browser, utils, Language }) {
     return async function(title, options = {}, threadID, callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        if (!threadID || !utils.includes(threadID, 'String', 'Number')) return callback('Please pass a threadID in the third arguments');
+        if (!threadID || !utils.includes(threadID, 'String', 'Number')) return callback(Language('createPoll', 'needThreadID'));
         var form = {
             target_id: threadID,
             question_text: title

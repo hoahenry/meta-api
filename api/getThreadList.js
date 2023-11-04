@@ -1,4 +1,4 @@
-module.exports = function({ browser, utils, client }) {
+module.exports = function({ browser, utils, client, Language }) {
     function formatThreadList(data) {
         return data.map(t => formatThreadGraphQLResponse(t));
     }
@@ -111,8 +111,8 @@ module.exports = function({ browser, utils, client }) {
             callback = tags;
             tags = [''];
         }
-        if (!Number.isNumber(limit) || !Number.isInteger(limit) || limit <= 0) return callback('Limit must be a positive integer');
-        if (utils.getType(timestamp) !== 'Null' && (!Number.isNumber(timestamp) || !Number.isInteger(timestamp))) return callback('Timestamp must be an integer or null');
+        if (!Number.isNumber(limit) || !Number.isInteger(limit) || limit <= 0) return callback(Language('getThreadList', 'errorLimitType'));
+        if (utils.getType(timestamp) !== 'Null' && (!Number.isNumber(timestamp) || !Number.isInteger(timestamp))) return callback(Language('getThreadList', 'errorTimestampType'));
         if (!Array.isArray(tags)) tags = [tags];
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         const form = {

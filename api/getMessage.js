@@ -1,4 +1,4 @@
-module.exports = function({ browser, client, utils }) {
+module.exports = function({ browser, client, utils, Language }) {
     const colors = [
         {
             theme_color: 'FF000000',
@@ -622,7 +622,7 @@ module.exports = function({ browser, client, utils }) {
 
     return async function(threadID, messageID, callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        if (!threadID || !messageID) callback('Need threadID and messageID.', null);
+        if (!threadID || !messageID) callback(Language('getMessage', 'needThreadIDAndMessageID'), null);
         var form = {
             "av": client.configs.pageID,
 			"queries": JSON.stringify({

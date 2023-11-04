@@ -1,6 +1,6 @@
-module.exports = function({ browser, client, utils }) {
+module.exports = function({ browser, client, utils, Language }) {
     return async function(newTitle, threadID, callback) {
-        if (!callback && Function.isFunction(threadID)) callback('Please pass a threadID as a second argument.');
+        if (!callback && Function.isFunction(threadID)) callback(Language('setTitle', 'needThreadID'));
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         var messageAndOTID = utils.generateOfflineThreadingID();
         var form = {

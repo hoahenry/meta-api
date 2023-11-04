@@ -1,0 +1,85 @@
+{
+    "system": {
+        "languageSelected": "System | Selected language: %1. You can change in '%2'.",
+        "notFoundRegion": "System | Region %1 does not exists in language %2.",
+        "notFoundKey": "System | Can't found %1 in region %2 of language %3.",
+        "unrecognizedConfigs": "System | Unrecognized option given to setConfigs: %1",
+        "newestVersion": "System | There is a newer version of Meta-API available",
+        "autoUpdate": "System | AllowUpdate is enabled, updating...",
+        "loginWithCookies": "System | Logging in with cookies...",
+        "loginWithEmailAndPassword": "System | Logging in with email and password...",
+        "inputEmail": "System | Please enter your email or Facebook ID: ",
+        "inputPassword": "System | Please enter your password: ",
+        "cookiesError": "System | Cookies must be an Array.",
+        "loginFailed": "System | Wrong email or password.",
+        "enteredApprovalsCode": "System | Please enter your approvals code (2FA) or leave it blank (Enter) if verified with another browser: ",
+        "incorrectApprovalsCode": "System | Login with email and password failed. Incorrect approvals code",
+        "verifiedWithBrowser": "System | Verified from browser, continuing to login...",
+        "errorLogin": "System | Error retrieving user ID, login your account with browser to check and try again.",
+        "loggedinWith": "System | Logged in with userID: %1",
+        "mqttRegion": "System | Your MQTT Region: %1",
+        "notFoundMqttRegion": "System | Cannot get MQTT region."
+    },
+    "addUsersToGroup": {
+        "needThreadID": "addUsersToGroup | Please pass a threadID as a second argument.",
+        "wrongType": "addUsersToGroup | ThreadID should be of type Number or String and not %1.",
+        "wrongUserIDType": "addUsersToGroup | Elements of userID should be of type Number or String and not %1."
+    },
+    "createNewGroup": {
+        "needParticipantIDs": "createNewGroup | ParticipantIDs should have at least 2 IDs."
+    },
+    "createPoll": {
+        "needThreadID": "createPoll | Please pass a threadID in the third arguments."
+    },
+    "friendRequest": {
+        "needUserID": "friendRequest | Please pass a userID in the first arguments.",
+        "needRequestType": "friendRequest | Please pass a type in the second arguments. Type must be \"accept\", \"delete\", \"cancel\" or \"send\"."
+    },
+    "getMessage": {
+        "needThreadIDAndMessageID": "getMessage | Need threadID and messageID."
+    },
+    "getThreadList": {
+        "errorLimitType": "getThreadList | Limit must be a positive integer.",
+        "errorTimestampType": "getThreadList | Timestamp must be an integer or null."
+    },
+    "getThreadsInfo": {
+        "needThreadID": "getThreadsInfo | Please pass a threadID in the first arguments."
+    },
+    "getUserID": {
+        "needURL": "getUserID | Please pass an URL or Facebook Factor in the first argument.",
+        "error": "getUserID | The userID could not be found using this URL: %1."
+    },
+    "listen": {
+        "reconnectWithAnError": "Listener | Got an error. AutoReconnect is enable, starting reconnect...",
+        "connected": "Listener | Listener is connected.",
+        "disconnected": "Listener | Listener is disconnected.",
+        "reconnect": "Listener | Reconnecting...",
+        "notLoggedIn": "Listener | Not logged in."
+    },
+    "markRead": {
+        "needThreadID": "markRead | Please pass a threadID in the first arguments."
+    },
+    "removeUserFromGroup": {
+        "needUserID": "removeUserFromGroup | Please pass a userID in the first arguments.",
+        "needThreadID": "removeUserFromGroup | Please pass a threadID as a second argument."
+    },
+    "sendMessage": {
+        "isReadable": "sendMessage | Attachment should be a readable stream.",
+        "errorMessageType": "sendMessage | Message must be String or Object. Receive: %1.",
+        "errorThreadIDType": "sendMessage | ThreadID must be Number, String or Array. Receive: %1.",
+        "propertyDisable": "sendMessage | Dissallowed props: %1.",
+        "wrongLocation": "sendMessage | Location property needs both latitude and longitude.",
+        "bodyNotEmpty": "sendMessage | Body is not Empty.",
+        "errorTagType": "sendMessage | Mention tags must be String. Receive: %1.",
+        "notFoundTagString": "sendMessage | Mention for %1 not found in message."
+    },
+    "setMessageReaction": {
+        "needMessageID": "setMessageReaction | Please pass a messageID in the second arguments"
+    },
+    "setTitle": {
+        "needThreadID": "setTitle | Please pass a threadID in the second arguments."
+    },
+    "unsendMessage": {
+        "needMessageID": "unsendMessage | Please pass a messageID in the first arguments"
+    }
+}

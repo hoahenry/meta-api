@@ -1,8 +1,8 @@
-module.exports = function({ browser, client, utils, log }) {
+module.exports = function({ browser, client, utils, log, Language }) {
     return async function(userID, threadID, callback) {
-        if (!callback && Function.isFunction(threadID)) return log('addUserToGroup', 'Please pass a threadID as a second argument.', 'warn');
+        if (!callback && Function.isFunction(threadID)) return log('addUserToGroup', Language('addUsersToGroup', 'needThreadID'), 'warn');
         if (!callback) callback = utils.makeCallback();
-        if (!utils.includes(threadID, 'Number', 'String')) return log('addUserToGroup', 'ThreadID should be of type Number or String and not ' + utils.getType(threadID) + '.');
+        if (!utils.includes(threadID, 'Number', 'String')) return log('addUserToGroup', Language('addUsersToGroup', 'wrongType', utils.getType(threadID)));
         if (!Array.isArray(userID)) userID = [userID];
         var messageAndOTID = utils.generateOfflineThreadingID();
         var form = {
@@ -32,7 +32,7 @@ module.exports = function({ browser, client, utils, log }) {
             thread_fbid: threadID
         }
         for (let i = 0; i < userID.length; i++) {
-            if (!utils.includes(userID[i], 'Number', 'String')) log('addUserToGroup', 'Elements of userID should be of type Number or String and not ' + utils.getType(userID[i]) + '.', 'error');
+            if (!utils.includes(userID[i], 'Number', 'String')) log('addUserToGroup', Language('addUsersToGroup', 'wrongUserIDType', utils.getType(userID[i])), 'error');
             form["log_message_data[added_participants][" + i + "]"] = "fbid:" + userID[i].toString();
         }
         var response = await browser.post('https://www.facebook.com/messaging/send/', form);

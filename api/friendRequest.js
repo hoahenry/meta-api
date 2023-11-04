@@ -1,5 +1,4 @@
-module.exports = function friendRequest({ browser, utils, client }) {
-    const { makeCallback, includes } = utils;
+module.exports = function friendRequest({ browser, utils, client, Language }) {
     function getForm(userID, requestType) {
         var getType = {
             accept: { type: 'FriendingCometFriendRequestConfirmMutation', doc_id: '6368093549870401' },
@@ -58,8 +57,8 @@ module.exports = function friendRequest({ browser, utils, client }) {
     }
     return async function(userID, type, callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        if (!userID || !utils.includes(userID, 'String', 'Number')) return callback('Please pass a userID in the first arguments');
-        if (!type || !['accept', 'delete', 'send', 'cancel'].includes(type)) return callback('Please pass a type in the second arguments. Type must be "accept", "delete", "cancel" or "send"');
+        if (!userID || !utils.includes(userID, 'String', 'Number')) return callback(Language('friendRequest', 'needUserID'));
+        if (!type || !['accept', 'delete', 'send', 'cancel'].includes(type)) return callback(Language('friendRequest', 'needRequestType'));
         let form = getForm(userID, type);
         var response = await browser.post('https://www.facebook.com/api/graphql/', form);
         return !response || response.error ? callback(response) : callback(null);

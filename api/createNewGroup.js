@@ -1,11 +1,11 @@
-module.exports = function({ browser, utils, client }) {
+module.exports = function({ browser, utils, client, Language }) {
     return async function(participantIDs, title, callback) {
         if (!callback && Function.isFunction(title)) {
             callback = title;
             title = null;
         }
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        if (participantIDs.length < 2) return callback('ParticipantIDs should have at least 2 IDs.');
+        if (participantIDs.length < 2) return callback(Language('createNewGroup', 'needParticipantIDs'));
         var data = {
             input: {
                 entry_point: 'jewel_new_group',

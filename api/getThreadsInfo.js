@@ -1,4 +1,4 @@
-module.exports = function({ browser, utils }) {
+module.exports = function({ browser, utils, Language }) {
     function formatThreadGraphQLResponse(data) {
         if (data.errors) return data.errors;
         const messageThread = data.message_thread;
@@ -109,7 +109,7 @@ module.exports = function({ browser, utils }) {
     }
     return async function(threadID, callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        if (!threadID || !utils.includes(threadID, 'String', 'Array')) return callback('Please pass a threadID in the first arguments', null);
+        if (!threadID || !utils.includes(threadID, 'String', 'Array')) return callback(Language('getThreadsInfo', 'needThreadID'), null);
         if (!Array.isArray(threadID)) threadID = [threadID];
         var form = {};
         threadID.map(function(t, i) {

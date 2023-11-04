@@ -1,0 +1,85 @@
+{
+    "system": {
+        "languageSelected": "Hệ Thống | Ngôn ngữ được chọn là: %1. Bạn có thể thay đổi tại \"%2\".",
+        "notFoundRegion": "Hệ Thống | Region %1 không tồn tại trong ngôn ngữ %2.",
+        "notFoundKey": "Hệ Thống | Không tìm thấy %1 trong region %2 của ngôn ngữ %3.",
+        "unrecognizedConfigs": "Hệ Thống | Những tùy chọn không được chấp nhận trong setConfigs: %1",
+        "newestVersion": "Hệ Thống | Đã có bản cập nhật mới cho Meta-API",
+        "autoUpdate": "Hệ Thống | AllowUpdate được cho phép, đang cập nhật phiên bản mới...",
+        "loginWithCookies": "Hệ Thống | Đang đăng nhập bằng cookies...",
+        "loginWithEmailAndPassword": "Hệ Thống | Đang đăng nhập bằng tài khoản và mật khẩu...",
+        "inputEmail": "Hệ Thống | Nhập email hoặc ID tài khoản của bạn: ",
+        "inputPassword": "Hệ Thống | Nhập mật khẩu tài khoản của bạn: ",
+        "cookiesError": "Hệ Thống | Cookies phải là một Mảng (Array).",
+        "loginFailed": "Hệ Thống | Sai tài khoản hoặc mật khẩu.",
+        "enteredApprovalsCode": "Hệ Thống | Vui lòng nhập mã xác minh (2FA) hoặc để trống (Enter) nếu bạn đã xác minh bằng trình duyệt: ",
+        "incorrectApprovalsCode": "Hệ Thống | Đăng nhập bằng email và mật khẩu thất bại, sai mã xác minh.",
+        "verifiedWithBrowser": "Hệ Thống | Đã xác minh bằng trình duyệt, đang tiếp tục đăng nhập...",
+        "errorLogin": "Hệ Thống | Xảy ra lỗi khi truy xuất userID, đăng nhập tài khoản của bạn bằng trình duyệt khác để kiểm tra và thử lại.",
+        "loggedinWith": "Hệ Thống | Đã đăng nhập bằng tài khoản có ID: %1",
+        "mqttRegion": "Hệ Thống | Region của tài khoản: %1",
+        "notFoundMqttRegion": "Hệ Thống | Không thể tìm thấy Region của tài khoản."
+    },
+    "addUsersToGroup": {
+        "needThreadID": "addUsersToGroup | Vui lòng chuyển threadID vào đối số thứ hai.",
+        "wrongType": "addUsersToGroup | ThreadID phải thuộc loại Số (Number) hoặc Chuỗi (String) chứ không phải %1.",
+        "wrongUserIDType": "addUsersToGroup | Các thành phần của userID phải thuộc loại Số (Number) hoặc Chuỗi (String) chứ không phải %1."
+    },
+    "createNewGroup": {
+        "needParticipantIDs": "createNewGroup | ParticipantIDs phải có ít nhất 2 ID."
+    },
+    "createPoll": {
+        "needThreadID": "createPoll | Vui lòng chuyển threadID vào đối số thứ ba."
+    },
+    "friendRequest": {
+        "needUserID": "friendRequest | Vui lòng chuyển userID trong đối số đầu tiên.",
+        "needRequestType": "friendRequest | Vui lòng chuyển một loại (type) trong đối số thứ hai. Loại (type) phải là \"accept\", \"delete\", \"cancel\" hoặc \"send\"."
+    },
+    "getMessage": {
+        "needThreadIDAndMessageID": "getMessage | Cần threadID và messageID."
+    },
+    "getThreadList": {
+        "errorLimitType": "getThreadList | Giới hạn (limit) phải là số nguyên dương.",
+        "errorTimestampType": "getThreadList | Dấu thời gian (timestamp) phải là số nguyên (Number, Interger) hoặc null."
+    },
+    "getThreadsInfo": {
+        "needThreadID": "getThreadsInfo | Vui lòng chuyển threadID trong đối số đầu tiên."
+    },
+    "getUserID": {
+        "needURL": "getUserID | Vui lòng chuyển URL hoặc Facebook Factor trong đối số đầu tiên.",
+        "error": "getUserID | Không thể tìm thấy ID người dùng bằng URL này: %1."
+    },
+    "listen": {
+        "reconnectWithAnError": "Listener | Đã xảy ra lỗi. AutoReconnect được cho phép, đang bắt đầu kết nối lại...",
+        "connected": "Listener | Listener đã được kết nối.",
+        "disconnected": "Listener | Listener bị ngắt kết nối.",
+        "kết nối lại": "Listener | Đang kết nối lại...",
+        "notLoggedIn": "Listener | Chưa đăng nhập (Kiểm tra lại tài khoản)."
+    },
+    "markRead": {
+        "needThreadID": "markRead | Vui lòng chuyển threadID trong đối số đầu tiên."
+    },
+    "removeUserFromGroup": {
+        "needUserID": "removeUserFromGroup| Vui lòng chuyển userID trong đối số đầu tiên.",
+        "needThreadID": "removeUserFromGroup | Vui lòng chuyển threadID làm đối số thứ hai."
+    },
+    "sendMessage": {
+        "isReadable": "sendMessage | Tệp đính kèm (Attachment) phải là luồng (Readable) có thể đọc được.",
+        "errorMessageType": "sendMessage | Tin nhắn (Message) phải là Chuỗi (String) hoặc Đối tượng (Object). Nhận được: %1.",
+        "errorThreadIDType": "sendMessage | ThreadID phải là Số (Number), Chuỗi (String) hoặc Mảng (Array). Nhận được: %1.",
+        "propertyDisable": "sendMessage | Props không được phép: %1.",
+        "wrongLocation": "sendMessage | Thuộc tính vị trí (Location) cần cả latitude và longitude.",
+        "bodyNotEmpty": "sendMessage | Nội dung (Body) không trống.",
+        "errorTagType": "sendMessage | Thẻ đề cập (Tag) phải là Chuỗi (String). Nhận được: %1.",
+        "notFoundTagString": "sendMessage | Không tìm thấy chuỗi đề cập đến %1 trong tin nhắn."
+    },
+    "setMessageReaction": {
+        "needMessageID": "setMessageReaction | Vui lòng chuyển messageID trong đối số thứ hai"
+    },
+    "setTitle": {
+        "needThreadID": "setTitle | Vui lòng chuyển threadID trong đối số thứ hai."
+    },
+    "unsendMessage": {
+        "needMessageID": "unsendMessage | Vui lòng chuyển messageID trong đối số đầu tiên"
+    }
+}
