@@ -95,7 +95,7 @@ async function login({ cookies, email, password, configs, language }, callback) 
     if (cookie.length == 0) return callback(Language('system', 'errorLogin'), null);
     client.userID = cookie[0].cookieString().split("=")[1].toString();
     log('Login', Language('system', 'loggedinWith', client.userID), 'magenta');
-    log('Login', Language('system', client.region ? Language('system', 'mqttRegion', client.region.toUpperCase()) : Language('system', 'notFoundMqttRegion')), 'magenta');
+    log('Login', client.region ? Language('system', 'mqttRegion', client.region.toUpperCase()) : Language('system', 'notFoundMqttRegion'), 'magenta');
 
     let browser = request.makeAccountBrowser(body);
     let apiName = readdirSync(__dirname + '/api/').filter(name => name.endsWith('.js')).map(name => name.replace(/\.js/, '')), api = {};
