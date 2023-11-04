@@ -27,7 +27,7 @@ module.exports = function({ browser, client, utils, log, Language }) {
             status: '0',
             offline_threading_id: messageAndOTID,
             message_id: messageAndOTID,
-            threading_id: utils.generateThreadingID(Cli.clientID),
+            threading_id: utils.generateThreadingID((Math.random() * 2147483648 | 0).toString(16)),
             manual_rety_cnt: '0',
             thread_fbid: threadID
         }
