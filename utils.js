@@ -889,7 +889,7 @@ module.exports = function({ client }) {
         }
     }
 
-    async function formatEvents({ callback }) {
+    async function formatEvents({ callback, deltas }) {
         if (client.configs.listenEvents) {
             try {
                 var formatEvent = formatDeltaEvent(deltas);
@@ -910,7 +910,7 @@ module.exports = function({ client }) {
             case 'ApprovalQueue':
             case 'ThreadName':
             case 'ParticipantsAddedToGroupThread':
-            case 'ParticipantLeftGroupThread': return formatEvents({ callback });
+            case 'ParticipantLeftGroupThread': return formatEvents({ callback, deltas });
         }
     }
 
