@@ -34,7 +34,7 @@ module.exports = function({ requestDefaults, utils, Cli }) {
 
     return async function(callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        let response = await requestDefaults.postFormData('https://www.facebook.com/chat/user_info_all', { viewer: Cli.userID });
+        let response = await requestDefaults.postFormData('https://www.facebook.com/chat/user_info_all', { viewer: client.userID });
         return !response || response.error ? callback(response) : callback(null, formatData(response.payload));
     }
 }
