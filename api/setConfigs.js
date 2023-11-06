@@ -1,4 +1,4 @@
-module.exports = function({ client, utils }) {
+module.exports = function({ client, utils, Language }) {
     return function(options, callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         var allowedProperties = Object.keys(client.configs), clientConfigProperties = Object.keys(configs);

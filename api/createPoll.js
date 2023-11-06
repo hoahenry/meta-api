@@ -12,6 +12,6 @@ module.exports = function({ browser, utils, Language }) {
             form['option_is_selected_array[' + i + ']'] = options[properties[i]] ? '1' : '0';
         }
         var response = await browser.post('https://www.facebook.com/messaging/group_polling/create_poll/?dpr=1', form);
-        return !response || response.error ? callback(response) : callback(null);
+        return !response ? callback(Language('createPoll', 'failedCreatePoll')) : response.error ? callback(response) : callback(null);
     }
 }

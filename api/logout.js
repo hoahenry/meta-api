@@ -1,4 +1,4 @@
-module.exports = function({ browser, utils, client, api }) {
+module.exports = function({ browser, utils, client, api, Language }) {
     async function disconnect(callback) {
         if (api.disconnect) return api.disconnect(callback);
         if (client.mqtt) {
@@ -27,9 +27,9 @@ module.exports = function({ browser, utils, client, api }) {
         };
         return disconnect(async function() {
             var response = await browser.post("https://www.facebook.com/logout.php", form);
-            if (!response.headers) return callback('An error occurred when logging out.');
+            if (!response.headers) return callback(Language('logout', 'error'));
             var response = await browser.get(response.headers.location);
-            return callback('Logged out successfully.');
+            return callback(null, Language('logout', 'loggedOut'));
         })
     }
 }

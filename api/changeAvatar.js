@@ -1,6 +1,6 @@
-module.exports = function({ browser, client, utils }) {
+module.exports = function({ browser, client, utils, Language }) {
+    var defaultCaption = 'API create by HoaHenry\nFacebook: https://facebook.com/s2.henry \nOfficial Website: https://hoahenry.info'
     async function uploadAvatar(image, callback) {
-        let uploads = [];
         let from = {
             profile_id: client.userID,
             photo_source: 57,
@@ -8,23 +8,21 @@ module.exports = function({ browser, client, utils }) {
             file: image
         }
         let response = await browser.postFormData('https://www.facebook.com/profile/picture/upload/', from);
-        uploads.push(response);
-        let results = await Promise.all(uploads);
-        return callback(null, results);
+        return callback(response);
     }
-    return async function(image, caption = 'API create by HoaHenry\nFacebook: https://facebook.com/s2.henry \nOfficial Website: https://hoahenry.info', timestamp = null, callback) {
+    return async function(image, caption = defaultCaption, timestamp = null, callback) {
         if (!timestamp && !Number.isNumber(caption)) {
             timestamp = caption;
-            caption = '';
+            caption = defaultCaption;
         }
         if (!timestamp && !callback && Function.isFunction(caption)) {
             callback = caption;
-            caption = '';
+            caption = defaultCaption;
             timestamp = null;
         }
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        if (!utils.isReadableStream(image)) return callback('Image is not a readable stream');
-        uploadAvatar(image, async function(response) {
+        if (!utils.isReadableStream(image)) return callback(Language('changeAvatar', 'notReadable'));
+        return uploadAvatar(image, async function(response) {
             let form = {
                 av: client.userID,
                 fb_api_req_friendly_name: "ProfileCometProfilePictureSetMutation",
@@ -33,7 +31,7 @@ module.exports = function({ browser, client, utils }) {
                 variables: JSON.stringify({
                     input: {
                         caption,
-                        existing_photo_id: response[0].payload.fbid,
+                        existing_photo_id: response.payload.fbid,
                         expiration_time: timestamp,
                         profile_id: client.userID,
                         profile_pic_method: "EXISTING",
@@ -53,8 +51,8 @@ module.exports = function({ browser, client, utils }) {
                     scale: 3
                 })
             };
-            var res = await browser.post('https://www.facebook.com/api/graphql/', form);
-            return !res || res.error ? callback(res) : callback(null, res[0].data.profile_picture_set);
+            var response = await browser.post('https://www.facebook.com/api/graphql/', form);
+            return !response ? callback(Language('changeAvatar', 'changeFailed')) : response.error ? callback(response) : callback(null, response.data);
         })
     }
 }

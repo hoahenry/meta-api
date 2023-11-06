@@ -1,4 +1,4 @@
-module.exports = function({ browser, utils }) {
+module.exports = function({ browser, utils, Language }) {
     return async function(userID, callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         if (!Array.isArray(userID)) userID = [userID];
@@ -7,7 +7,8 @@ module.exports = function({ browser, utils }) {
             form['ids[' + i + ']'] = v;
         })
         var response = await browser.post('https://www.facebook.com/chat/user_info/', form);
-        if (!response || response.error) return callback(response, null);
+        if (!response) return callback(Language('getUsersInfo', 'failedGetUsersInfo', userID.join('`, ')))
+        if (response.error) return callback(response);
         for (let prop in response.payload.profiles) {
             var innerObj = response.payload.profiles[prop];
             obj[prop] = {

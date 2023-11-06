@@ -12,8 +12,7 @@ module.exports = function({ browser, client, utils, Language }) {
                     upload_1024: item
                 }
                 let response = await browser.postFormData('https://upload.facebook.com/ajax/mercury/upload.php', formData);
-                if (!response || response.error) throw new Error(response);
-                return response.payload.metadata[0];
+                return !response ? callback(Language('sendMessage', 'failedUploadAttachment')) : response.error ? callback(response) : callback(null, response.payload.metadata.shift());
             });
 
             let results = await Promise.all(uploads);
@@ -39,7 +38,8 @@ module.exports = function({ browser, client, utils, Language }) {
         }
         
         var response = await browser.post('https://www.facebook.com/messaging/send/', form);
-        if (!response || response.error) return callback(response, null);
+        if (!response) return callback(Language('sendMessage', 'failedSendMessage'))
+        if (response.error) return callback(response);
         try {
             var messageInfo = response.payload.actions.reduce((p, v) => {
                 return ({ threadID: v.thread_fbid, messageID: v.message_id, timestamp: v.timestamp } || p);
@@ -58,8 +58,7 @@ module.exports = function({ browser, client, utils, Language }) {
 			uri: url
 		};
         let response = await browser.post('https://www.facebook.com/message_share_attachment/fromURI/', form);
-        if (!response || response.error || !response.payload) return callback(response);
-        return callback(null, response.payload.share_data.share_params);
+        return !response ? callback(Language('sendMessage', 'failedGetUrl', url)) : response.error ? callback(response) : callback(null, response.payload.share_data.share_params);
 	}
 
     return async function(message, threadID, replyToMessage, callback) {

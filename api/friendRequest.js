@@ -61,6 +61,6 @@ module.exports = function friendRequest({ browser, utils, client, Language }) {
         if (!type || !['accept', 'delete', 'send', 'cancel'].includes(type)) return callback(Language('friendRequest', 'needRequestType'));
         let form = getForm(userID, type);
         var response = await browser.post('https://www.facebook.com/api/graphql/', form);
-        return !response || response.error ? callback(response) : callback(null);
+        return !response ? callback(Language('friendRequest', 'requestError', userID)) : response.error ? callback(response) : callback(null);
     }
 }

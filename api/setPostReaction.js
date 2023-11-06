@@ -1,4 +1,4 @@
-module.exports = function({ browser, utils, client }) {
+module.exports = function({ browser, utils, client, Language }) {
     let map = {
         unlike: 0,
         like: 1,
@@ -45,6 +45,6 @@ module.exports = function({ browser, utils, client }) {
             })
         }
         let response = await browser.post('https://www.facebook.com/api/graphql/', form);
-        return !response || response.error ? callback(response) : callback(null);
+        return !response ? callback(Language('setPostReaction', 'failedSetReaction', postID)) : response.error ? callback(response) : callback(null);
     }
 }

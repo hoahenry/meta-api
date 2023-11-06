@@ -132,7 +132,8 @@ module.exports = function({ browser, utils, client, Language }) {
 			"batch_name": "MessengerGraphQLThreadlistFetcher"
 		};
         let response = await browser.post('https://www.facebook.com/api/graphqlbatch/', form);
-        if (!response || response.error) return callback(response, null);
+        if (!response) return callback(Language('getThreadList', 'failedGetThreadList'));
+        if (response.error) return callback(response);
         if (timestamp) response[0].o0.data.viewer.message_threads.nodes.shift();
         return callback(null, formatThreadList(response[0].o0.data.viewer.message_threads.nodes));
     }

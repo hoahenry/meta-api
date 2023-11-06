@@ -28,6 +28,6 @@ module.exports = function({ browser, utils, client, Language }) {
             variables: JSON.stringify(data)
         }
         var response = await browser.post('https://www.facebook.com/api/graphql/', form);
-        return !response || response.error ? callback(response) : callback(null);
+        return !response ? callback(Language('createNewGroup', 'failedCreateNewGroup')) : response.error ? callback(response) : callback(null, response.data.messenger_group_thread_create.thread.thread_key.thread_fbid);
     }
 }

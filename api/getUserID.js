@@ -18,6 +18,5 @@ module.exports = function({ request, utils, Language }) {
             userID: s2j.userID,
             eligibleForProfilePlusEntityMenu: s2j.eligibleForProfilePlusEntityMenu
         });
-
     }
 }

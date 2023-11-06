@@ -18,52 +18,101 @@
         "errorLogin": "Xảy ra lỗi khi truy xuất userID, đăng nhập tài khoản của bạn bằng trình duyệt khác để kiểm tra và thử lại.",
         "loggedinWith": "Đã đăng nhập bằng tài khoản có ID: %1",
         "mqttRegion": "Region của tài khoản: %1",
-        "notFoundMqttRegion": "Không thể tìm thấy Region của tài khoản."
+        "notFoundMqttRegion": "Đã xảy ra lỗi tìm thấy Region của tài khoản."
     },
     "addUsersToGroup": {
         "needThreadID": "addUsersToGroup | Vui lòng chuyển threadID vào đối số thứ hai.",
         "wrongType": "addUsersToGroup | ThreadID phải thuộc loại Số (Number) hoặc Chuỗi (String) chứ không phải %1.",
-        "wrongUserIDType": "addUsersToGroup | Các thành phần của userID phải thuộc loại Số (Number) hoặc Chuỗi (String) chứ không phải %1."
+        "wrongUserIDType": "addUsersToGroup | Các thành phần của userID phải thuộc loại Số (Number) hoặc Chuỗi (String) chứ không phải %1.",
+        "addFailed": "addUsersToGroup | Thêm thành viên vào nhóm thất bại."
+    },
+    "changeAvatar": {
+        "notReadable": "changeAvatar | Đối số `image` nhận được không phải Readable Stream",
+        "changeFailed": "changeAvatar | Đã xảy ra lỗi thay đổi ảnh đại diện."
+    },
+    "changeNickname": {
+        "failedChangeNickname": "changeNickname | Đã xảy ra lỗi thay đổi biệt danh."
+    },
+    "changeThreadColor": {
+        "failedChangeThreadColor": "changeThreadColor | Đã xảy ra lỗi thay đổi chủ đề của đoạn chat."
+    },
+    "changeThreadEmoji": {
+        "failedChangeThreadEmoji": "changeThreadEmoji | Đã xảy ra lỗi thay đổi biểu tượng cảm xúc của đoạn chat."
     },
     "createNewGroup": {
+        "failedCreateGroup": "createNewGroup | Đã xảy ra lỗi tạo đoạn chat mới.",
         "needParticipantIDs": "createNewGroup | ParticipantIDs phải có ít nhất 2 ID."
     },
     "createPoll": {
+        "failedCreatePoll": "createPoll | Đã xảy ra lỗi tạo cuộc thăm dò ý kiến mới.",
         "needThreadID": "createPoll | Vui lòng chuyển threadID vào đối số thứ ba."
     },
     "friendRequest": {
+        "requestError": "friendRequest | Đã xảy ra lỗi khi thực hiện yêu cầu kết bạn với userID %1.",
         "needUserID": "friendRequest | Vui lòng chuyển userID trong đối số đầu tiên.",
         "needRequestType": "friendRequest | Vui lòng chuyển một loại (type) trong đối số thứ hai. Loại (type) phải là \"accept\", \"delete\", \"cancel\" hoặc \"send\"."
     },
+    "getFriendList": {
+        "failedGetFriendList": "getFriendList | Đã xảy ra lỗi khi lấy danh sách bạn bè."
+    },
     "getMessage": {
+        "failedGetMessage": "getMessage | Đã xảy ra lỗi khi lấy thông tin về tin nhắn có ID %1 tại nhóm có ID %2.",
         "needThreadIDAndMessageID": "getMessage | Cần threadID và messageID."
     },
+    "getPictures": {
+        "failedGetPicture": "getPictures | Đã xảy ra lỗi khi lấy thông tin hình ảnh."
+    },
     "getThreadList": {
+        "failedGetThreadList": "getThreadList | Đã xảy ra lỗi khi lấy danh sách nhóm.",
         "errorLimitType": "getThreadList | Giới hạn (limit) phải là số nguyên dương.",
         "errorTimestampType": "getThreadList | Dấu thời gian (timestamp) phải là số nguyên (Number, Interger) hoặc null."
     },
     "getThreadsInfo": {
+        "failedGetThreadInfo": "getThreadsInfo | Đã xảy lỗi khi lấy thông tin nhóm có ID %1.",
         "needThreadID": "getThreadsInfo | Vui lòng chuyển threadID trong đối số đầu tiên."
     },
     "getUserID": {
         "needURL": "getUserID | Vui lòng chuyển URL hoặc Facebook Factor trong đối số đầu tiên.",
         "error": "getUserID | Không thể tìm thấy ID người dùng bằng URL này: %1."
     },
+    "getUsersInfo": {
+        "failedGetUsersInfo": "getUsersInfo | Đã xảy ra lỗi khi lấy thông tin của người dùng có ID %1."
+    },
     "listen": {
-        "reconnectWithAnError": "Listener | Đã xảy ra lỗi. AutoReconnect được cho phép, đang bắt đầu kết nối lại...",
-        "connected": "Listener | Listener đã được kết nối.",
-        "disconnected": "Listener | Listener bị ngắt kết nối.",
-        "kết nối lại": "Listener | Đang kết nối lại...",
-        "notLoggedIn": "Listener | Chưa đăng nhập (Kiểm tra lại tài khoản)."
+        "reconnectWithAnError": "Đã xảy ra lỗi với Listener. AutoReconnect được cho phép, đang bắt đầu kết nối lại...",
+        "connected": "Listener đã được kết nối.",
+        "disconnected": "Listener bị ngắt kết nối.",
+        "kết nối lại": "Listener đang kết nối lại...",
+        "notLoggedIn": "Đã xảy ra lỗi với Listener, vui lòng kiểm tra lại tài khoản."
+    },
+    "logout": {
+        "error": "logout | Đã xảy ra lỗi khi đăng xuất.",
+        "loggedOut": "logout | Đăng xuất thành công."
     },
     "markRead": {
+        "failedMarkRead": "markRead | Đã xảy ra lỗi khi markRead nhóm có ID %1.",
         "needThreadID": "markRead | Vui lòng chuyển threadID trong đối số đầu tiên."
     },
+    "markReadAll": {
+        "failedMarkReadAll": "markReadAll | Đã xảy ra lỗi khi markReadAll."
+    },
+    "muteThread": {
+        "failedMuteThread": "muteThread | Đã xảy ra lỗi khi thực hiện muteThread cho nhóm có ID %1."
+    },
     "removeUserFromGroup": {
+        "failedRemoveUser": "removeUserFromGroup | Đã xảy ra lỗi khi xóa người dùng có ID %1 ra khỏi nhóm có ID %2.",
         "needUserID": "removeUserFromGroup| Vui lòng chuyển userID trong đối số đầu tiên.",
         "needThreadID": "removeUserFromGroup | Vui lòng chuyển threadID làm đối số thứ hai."
     },
+    "resolvePhotoUrl": {
+        "failedResolve": "resolvePhotoUrl | Đã xảy ra lỗi khi giải quyết URL của ảnh có ID %1."
+    },
+    "searchUsers": {
+        "failedSearch": "searchUsers | Đã xảy ra lỗi khi tìm kiếm người dùng bằng từ khóa %1." 
+    },
     "sendMessage": {
+        "failedUploadAttachment": "sendMessage | Đã xảy ra lỗi khi tải lên tệp đính kèm của tin nhắn.",
+        "failedSendMessage": "sendMessage | Đã xảy ra lỗi khi gửi tin nhắn.",
         "isReadable": "sendMessage | Tệp đính kèm (Attachment) phải là luồng (Readable) có thể đọc được.",
         "errorMessageType": "sendMessage | Tin nhắn (Message) phải là Chuỗi (String) hoặc Đối tượng (Object). Nhận được: %1.",
         "errorThreadIDType": "sendMessage | ThreadID phải là Số (Number), Chuỗi (String) hoặc Mảng (Array). Nhận được: %1.",
@@ -73,13 +122,29 @@
         "errorTagType": "sendMessage | Thẻ đề cập (Tag) phải là Chuỗi (String). Nhận được: %1.",
         "notFoundTagString": "sendMessage | Không tìm thấy chuỗi đề cập đến %1 trong tin nhắn."
     },
+    "sendTyping": {
+        "failedsendTyping": "sendTyping | Đã xảy ra lỗi khi thực thi sendTyping tới nhóm có ID %1.",
+        "failedRemoveTyping": "sendTyping | Đã xảy ra lỗi khi thực thi removeTyping tới nhóm có ID %1."
+    },
+    "setBio": {
+        "failedSetBio": "setBio | Đã xảy ra lỗi khi đặt tiểu sử."
+    },
     "setMessageReaction": {
+        "failedSetReaction": "setMessageReaction | Đã xảy ra lỗi khi bày tỏ cảm xúc với tin nhắn có ID %1.",
         "needMessageID": "setMessageReaction | Vui lòng chuyển messageID trong đối số thứ hai"
     },
+    "setPostReaction": {
+        "failedSetReaction": "setPostReaction | Đã xảy ra lỗi khi bày tỏ cảm xúc với bài viết có ID %1."
+    },
     "setTitle": {
+        "failedSetTitle": "setTitle | Đã xảy ra lỗi khi đặt tên cho nhóm có ID %1.",
         "needThreadID": "setTitle | Vui lòng chuyển threadID trong đối số thứ hai."
     },
+    "unfriend": {
+        "failedUnfriend": "unfriend | Đã xảy ra lỗi khi hủy kết bạn với người dùng có ID %1."
+    },
     "unsendMessage": {
+        "failedUnsend": "unsendMessage | Đã xảy ra lỗi khi gỡ tin nhắn có ID %1.",
         "needMessageID": "unsendMessage | Vui lòng chuyển messageID trong đối số đầu tiên"
     }
 }

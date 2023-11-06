@@ -1,4 +1,4 @@
-module.exports = function({ browser, utils, client }) {
+module.exports = function({ browser, utils, client, Language }) {
     return async function(content, publish, callback) {
         if (!callback && Function.isFunction(publish)) {
             callback = publish;
@@ -25,6 +25,6 @@ module.exports = function({ browser, utils, client }) {
             av: client.userID
         };
         let response = await browser.post('https://www.facebook.com/api/graphql/', form);
-        return !response || response.error ? callback(response) : callback(null);
+        return !response ? callback(Language('setBio', 'failedSetBio')) : response.error ? callback(response) : callback(null);
     }
 }

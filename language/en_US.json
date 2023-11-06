@@ -23,7 +23,8 @@
     "addUsersToGroup": {
         "needThreadID": "addUsersToGroup | Please pass a threadID as a second argument.",
         "wrongType": "addUsersToGroup | ThreadID should be of type Number or String and not %1.",
-        "wrongUserIDType": "addUsersToGroup | Elements of userID should be of type Number or String and not %1."
+        "wrongUserIDType": "addUsersToGroup | Elements of userID should be of type Number or String and not %1.",
+        "addFailed": "addUsersToGroup | Add member to group failed."
     },
     "createNewGroup": {
         "needParticipantIDs": "createNewGroup | ParticipantIDs should have at least 2 IDs."

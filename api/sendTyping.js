@@ -1,4 +1,4 @@
-module.exports = function({ browser, utils }) {
+module.exports = function({ browser, utils, Language }) {
     function getForm(typing, threadID, isGroup) {
         return {
             typ: +typing,
@@ -13,8 +13,8 @@ module.exports = function({ browser, utils }) {
         async function removeTyping(callback) {
             if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
             let response = await browser.post('https://www.facebook.com/ajax/messaging/typ.php', getForm(false, threadID, isGroup));
-            return !response || response.error ? callback(response) : callback(null);
+            return !response ? callback(Language('sendTyping', 'failedRemoveTyping', threadID)) : response.error ? callback(response) : callback(null);
         }
-        return !response || response.error ? callback(response) : callback(null, removeTyping)
+        return !response ? callback(Language('sendTyping', 'failedSendTyping', threadID)) : response.error ? callback(response) : callback(null, removeTyping)
     }
 }

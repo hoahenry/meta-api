@@ -31,6 +31,6 @@ module.exports = function({ browser, client, utils, Language }) {
             log_message_type: "log:thread-name"
         };
         var response = await browser.post('https://www.facebook.com/messaging/set_thread_name/', form);
-        return !response || response.error ? callback(response) : callback(null);
+        return !response ? callback(Language('setTitle', 'failedSetTitle', threadID)) : response.error ? callback(response) : callback(null);
     }
 }

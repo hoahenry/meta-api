@@ -622,7 +622,7 @@ module.exports = function({ browser, client, utils, Language }) {
 
     return async function(threadID, messageID, callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        if (!threadID || !messageID) callback(Language('getMessage', 'needThreadIDAndMessageID'), null);
+        if (!threadID || !messageID) return callback(Language('getMessage', 'needThreadIDAndMessageID'), null);
         var form = {
             "av": client.configs.pageID,
 			"queries": JSON.stringify({
@@ -638,8 +638,6 @@ module.exports = function({ browser, client, utils, Language }) {
 			})
         }
         var response = await browser.post('https://www.facebook.com/api/graphqlbatch/', form);
-        if (!response || response.error) return callback(response, null);
-        var data = response[0].o0.data.message;
-        return data ? callback(null, formatMessage(threadID, data)) : callback(response);
+        return !response ? callback(Language('getMessage', 'failedGetMessage', messageID, threadID)) : response.error ? callback(response.error) : callback(null, formatMessage(response[0].o0.data.message));
     }
 }

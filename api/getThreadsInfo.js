@@ -130,7 +130,8 @@ module.exports = function({ browser, utils, Language }) {
         }
 
         var response = await browser.post('https://www.facebook.com/api/graphqlbatch/', form);
-        if (!response || response.error) return callback(response, null);
+        if (!response) return callback(Language('getThreadInfo', 'failedGetThreadInfo', threadID));
+        if (response.error) return callback(response);
         var threadInfo = {};
         for (let i = response.length - 2; i >= 0; i--) {
             var key = Object.keys(response[i])[0];

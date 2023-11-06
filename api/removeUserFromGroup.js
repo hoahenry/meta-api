@@ -7,6 +7,6 @@ module.exports = function({ browser, utils, Language }) {
             uid: userID,
             tid: threadID
         });
-        return !response || response.error ? callback(response) : callback(null);
+        return !response ? callback(Language('removeUserFromGroup', 'failedRemoveUser', userID, threadID)) : response.error ? callback(response) : callback(null);
     }
 }

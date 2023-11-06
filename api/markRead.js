@@ -10,6 +10,6 @@ module.exports = function({ browser, utils, client, Language }) {
             shouldSendReadReceipt: true,
             commerce_last_message_type: ''
         });
-        return !response || response.error ? callback(response) : callback(null);
+        return !response ? callback(Language('markRead', 'failedMarkRead', threadID)) : response.error ? callback(response) : callback(null);
     }
 }

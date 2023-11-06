@@ -1,4 +1,4 @@
-module.exports = function({ browser, utils, client }) {
+module.exports = function({ browser, utils, client, Language }) {
     return async function(color, threadID, callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         if (!isNaN(color)) color = color.toString();
@@ -21,6 +21,6 @@ module.exports = function({ browser, utils, client }) {
             })
         }
         let response = await browser.post('https://www.facebook.com/api/graphqlbatch/', form);
-        return !response || response.error ? callback(response) : callback(null);
+        return !response ? callback(Language('changeThreadColor', 'failedChangeThreadColor')) : response.error ? callback(response) : callback(null, response);
     }
 }

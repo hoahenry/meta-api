@@ -1,4 +1,4 @@
-module.exports = function({ browser, utils, client }) {
+module.exports = function({ browser, utils, client, Language }) {
     return async function(name, callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
         var form = {
@@ -11,7 +11,8 @@ module.exports = function({ browser, utils, client }) {
         }
 
         var response = await browser.get('https://www.facebook.com/ajax/typeahead/search.php', form);
-        if (!response || response.error) return callback(response, null);
+        if (!response) return callback(Language('searchUsers', 'failedSearch', name));
+        if (response.error) return callback(response);
         var data = response.payload.entries.map(function(data) {
             return {
                 userID: utils.formatID(data.uid.toString()),

@@ -1,4 +1,4 @@
-module.exports = function({ requestDefaults, utils, Cli }) {
+module.exports = function({ browser, utils, Language }) {
     var GENDERS = {
         0: "unknown",
         1: "female_singular",
@@ -34,7 +34,7 @@ module.exports = function({ requestDefaults, utils, Cli }) {
 
     return async function(callback) {
         if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
-        let response = await requestDefaults.postFormData('https://www.facebook.com/chat/user_info_all', { viewer: client.userID });
-        return !response || response.error ? callback(response) : callback(null, formatData(response.payload));
+        let response = await browser.postFormData('https://www.facebook.com/chat/user_info_all', { viewer: client.userID });
+        return !response ? callback(Language('getFriendList', 'failedGetFriendList')) : response.error ? callback(response) : callback(null, formatData(response.payload));
     }
 }

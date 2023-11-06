@@ -5,6 +5,7 @@ const jar = request.jar();
 module.exports = function({ client, utils, log }) {
     function getHeader(url, options) {
         return {
+            "Content-Type": "application/x-www-form-urlencoded",
             Referer: "https://www.facebook.com/",
             Host: url.replace("https://", "").split("/").shift(),
             Origin: "https://www.facebook.com",
@@ -18,7 +19,7 @@ module.exports = function({ client, utils, log }) {
     
     function get(url, options = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, queryString = {}) {
         options = Object.assign(options, {
-            headers: getHeader(url, options.headers),
+            headers: getHeader(url, options?.headers),
             timeout: 60000,
             qs: queryString,
             url,
@@ -29,11 +30,11 @@ module.exports = function({ client, utils, log }) {
         return request(options).then(saveCookies);
     }
 
-    function post(url, form = {}, options = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, queryString = {}) {
+    function post(url, form = {}, options = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, queryString) {
         options = Object.assign(options, {
             headers: getHeader(url, options.headers),
             timeout: 60000,
-            queryString: queryString || {},
+            qs: queryString,
             url,
             method: 'POST',
             jar,
@@ -69,13 +70,13 @@ module.exports = function({ client, utils, log }) {
                 ...obj
             }
         }
-        function _get(url, options = {}, queryString = {}, retry = 0) {
+        function _get(url, options, queryString, retry = 0) {
             return get(url, options, mergeWithDefaults(queryString)).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }, retry));
         }
-        function _post(url, form = {}, options = {}, retry = 0) {
+        function _post(url, form, options, retry = 0) {
             return post(url, mergeWithDefaults(form), options).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }, retry));
         }
-        function _postFormData(url, form = {}, options = { headers: { "Content-Type": "multipart/form-data" } }, queryString = {}, retry = 0) {
+        function _postFormData(url, form, options = { headers: { "Content-Type": "multipart/form-data" } }, queryString = {}, retry = 0) {
             return post(url, mergeWithDefaults(form), options, mergeWithDefaults(queryString)).then(checkAccountStatus({ get: _get, post: _post, postFormData: _postFormData }, retry));
         }
         return {
@@ -100,7 +101,7 @@ module.exports = function({ client, utils, log }) {
                 if (data.statusCode !== 200) throw new Error(`Got status code: ${data.statusCode}. Bailing out of trying to parse response.`);
                 var res = JSON.parse(utils.makeParsable(data.body));
                 if (res.error === 1357001) throw new Error('Not logged in.');
-                if (res.redirect && res.request.method === 'GET') return browser.get(res.redirect).then(checkAccountStatus(browser));
+                if (res.redirect && res.request.method === 'GET') return browser.get(res.redirect);
                 if (res.jsmods && res.jsmods.require && Array.isArray(res.jsmods.require[0]) && res.jsmods.require[0][0] === 'Cookie') {
                     res.jsmods.require[0][3][0] = res.jsmods.require[0][3][0].replace("_js_", "");
                     var facebookCookie = utils.formatCookie(res.jsmods.require[0][3], "facebook");

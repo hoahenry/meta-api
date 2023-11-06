@@ -16,6 +16,6 @@ module.exports = function({ browser, utils, client, Language }) {
             dpr: 1
         }
         var response = await browser.postFormData('https://www.facebook.com/webgraphql/mutation/', form);
-        return !response || response.error ? callback(response) : callback(null);
+        return !response ? callback(Language('setMessageReaction', 'failedSetReaction', messageID)) : response.error ? callback(response) : callback(null);
     }
 }
