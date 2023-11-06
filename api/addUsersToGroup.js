@@ -33,7 +33,7 @@ module.exports = function ({ browser, client, utils, log, Language }) {
         };
         userID.forEach(function(item, index) {
             if (!utils.includes(item, 'Number', 'String')) return log('addUserToGroup', Language('addUsersToGroup', 'wrongUserIDType', utils.getType(item)), 'error');
-            form["log_message_data[added_participants][" + i + "]"] = "fbid:" + item.toString();
+            form["log_message_data[added_participants][" + index + "]"] = "fbid:" + item.toString();
         })
         var response = await browser.post('https://www.facebook.com/messaging/send/', form);
         return !response ? callback(Language('addUsersToGroup', 'addFailed')) : response.error ? callback(response) : callback(null, response);
