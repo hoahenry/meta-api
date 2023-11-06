@@ -26,61 +26,125 @@
         "wrongUserIDType": "addUsersToGroup | Elements of userID should be of type Number or String and not %1.",
         "addFailed": "addUsersToGroup | Add member to group failed."
     },
+    "changeAvatar": {
+        "notReadable": "changeAvatar | The received `image` argument is not a Readable Stream",
+        "changeFailed": "changeAvatar | An error occurred changing the avatar."
+    },
+    "changeNickname": {
+        "failedChangeNickname": "changeNickname | An error occurred changing the nickname."
+    },
+    "changeThreadColor": {
+        "failedChangeThreadColor": "changeThreadColor | An error occurred changing the group's thread."
+    },
+    "changeThreadEmoji": {
+        "failedChangeThreadEmoji": "changeThreadEmoji | An error occurred changing the chat emoticon."
+    },
     "createNewGroup": {
+        "failedCreateGroup": "createNewGroup | An error occurred creating a new chat.",
         "needParticipantIDs": "createNewGroup | ParticipantIDs should have at least 2 IDs."
     },
     "createPoll": {
+        "failedCreatePoll": "createPoll | An error occurred creating a new poll.",
         "needThreadID": "createPoll | Please pass a threadID in the third arguments."
     },
     "friendRequest": {
+        "requestError": "friendRequest | An error occurred while making a friend request with userID %1.",
         "needUserID": "friendRequest | Please pass a userID in the first arguments.",
         "needRequestType": "friendRequest | Please pass a type in the second arguments. Type must be \"accept\", \"delete\", \"cancel\" or \"send\"."
     },
+    "getFriendList": {
+        "failedGetFriendList": "getFriendList | An error occurred while getting the friends list."
+    },
     "getMessage": {
+        "failedGetMessage": "getMessage | An error occurred while getting information about message with ID %1 at group ID %2.",
         "needThreadIDAndMessageID": "getMessage | Need threadID and messageID."
     },
+    "getPictures": {
+        "failedGetPicture": "getPictures | An error occurred while retrieving image information."
+    },
     "getThreadList": {
+        "failedGetThreadList": "getThreadList | An error occurred while getting the group list.",
         "errorLimitType": "getThreadList | Limit must be a positive integer.",
         "errorTimestampType": "getThreadList | Timestamp must be an integer or null."
     },
     "getThreadsInfo": {
+        "failedGetThreadInfo": "getThreadsInfo | An error occurred while getting group information with ID %1.",
         "needThreadID": "getThreadsInfo | Please pass a threadID in the first arguments."
     },
     "getUserID": {
         "needURL": "getUserID | Please pass an URL or Facebook Factor in the first argument.",
         "error": "getUserID | The userID could not be found using this URL: %1."
     },
+    "getUserInfo": {
+        "failedGetUsersInfo": "getUserInfo | An error occurred while getting information for user ID %1."
+    },
     "listen": {
-        "reconnectWithAnError": "Listener | Got an error. AutoReconnect is enable, starting reconnect...",
-        "connected": "Listener | Listener is connected.",
-        "disconnected": "Listener | Listener is disconnected.",
-        "reconnect": "Listener | Reconnecting...",
-        "notLoggedIn": "Listener | Not logged in."
+        "reconnectWithAnError": "An error occurred with the Listener. AutoReconnect is allowed, starting to reconnect...",
+        "connected": "Listener is connected.",
+        "disconnected": "Listener is disconnected.",
+        "reconnect": "Listener is reconnecting...",
+        "notLoggedIn": "An error occurred with the Listener, please check your account again."
+    },
+    "logout": {
+        "error": "logout | An error occurred while logging out.",
+        "loggedOut": "logout | Successfully logged out."
     },
     "markRead": {
-        "needThreadID": "markRead | Please pass a threadID in the first arguments."
+        "failedMarkRead": "markRead | An error occurred when markRead group had ID %1.",
+        "needThreadID": "markRead | Please pass threadID in the first argument."
+    },
+    "markReadAll": {
+        "failedMarkReadAll": "markReadAll | An error occurred while markingReadAll."
+    },
+    "muteThread": {
+        "failedMuteThread": "muteThread | An error occurred while muteThread for group ID %1."
     },
     "removeUserFromGroup": {
-        "needUserID": "removeUserFromGroup | Please pass a userID in the first arguments.",
-        "needThreadID": "removeUserFromGroup | Please pass a threadID as a second argument."
+        "failedRemoveUser": "removeUserFromGroup | An error occurred while removing user ID %1 from group ID %2.",
+        "needUserID": "removeUserFromGroup| Please pass userID in the first argument.",
+        "needThreadID": "removeUserFromGroup | Please pass threadID as second argument."
+    },
+    "resolvePhotoUrl": {
+        "failedResolve": "resolvePhotoUrl | An error occurred while resolving the URL of photo with ID %1."
+    },
+    "searchUsers": {
+        "failedSearch": "searchUsers | An error occurred while searching for users using keyword %1."
     },
     "sendMessage": {
-        "isReadable": "sendMessage | Attachment should be a readable stream.",
-        "errorMessageType": "sendMessage | Message must be String or Object. Receive: %1.",
-        "errorThreadIDType": "sendMessage | ThreadID must be Number, String or Array. Receive: %1.",
-        "propertyDisable": "sendMessage | Dissallowed props: %1.",
-        "wrongLocation": "sendMessage | Location property needs both latitude and longitude.",
-        "bodyNotEmpty": "sendMessage | Body is not Empty.",
-        "errorTagType": "sendMessage | Mention tags must be String. Receive: %1.",
-        "notFoundTagString": "sendMessage | Mention for %1 not found in message."
+        "failedUploadAttachment": "sendMessage | An error occurred while uploading the message attachment.",
+        "failedSendMessage": "sendMessage | An error occurred while sending the message.",
+        "isReadable": "sendMessage | Attachment must be a readable stream.",
+        "errorMessageType": "sendMessage | Message must be String or Object. Received: %1.",
+        "errorThreadIDType": "sendMessage | ThreadID must be Number, String or Array. Received: %1.",
+        "propertyDisable": "sendMessage | Props not allowed: %1.",
+        "wrongLocation": "sendMessage | Location attribute requires both latitude and longitude.",
+        "bodyNotEmpty": "sendMessage | Body (Body) is not empty.",
+        "errorTagType": "sendMessage | Tag must be String. Received: %1.",
+        "notFoundTagString": "sendMessage | The string referring to %1 was not found in the message."
+    },
+    "sendTyping": {
+        "failedsendTyping": "sendTyping | An error occurred while executing sendTyping to group ID %1.",
+        "failedRemoveTyping": "sendTyping | An error occurred while executing removeTyping to the group with ID %1."
+    },
+    "setBio": {
+        "failedSetBio": "setBio | An error occurred while setting the profile."
     },
     "setMessageReaction": {
-        "needMessageID": "setMessageReaction | Please pass a messageID in the second arguments"
+        "failedSetReaction": "setMessageReaction | An error occurred while reacting to message ID %1.",
+        "needMessageID": "setMessageReaction | Please pass messageID in the second argument"
+    },
+    "setPostReaction": {
+        "failedSetReaction": "setPostReaction | An error occurred while reacting to a post with ID %1."
     },
     "setTitle": {
-        "needThreadID": "setTitle | Please pass a threadID in the second arguments."
+        "failedSetTitle": "setTitle | An error occurred while naming the group with ID %1.",
+        "needThreadID": "setTitle | Please pass threadID in the second argument."
+    },
+    "unfriend": {
+        "failedUnfriend": "unfriend | An error occurred while unfriending the user with ID %1."
     },
     "unsendMessage": {
-        "needMessageID": "unsendMessage | Please pass a messageID in the first arguments"
+        "failedUnsend": "unsendMessage | An error occurred while removing the message with ID %1.",
+        "needMessageID": "unsendMessage | Please pass messageID in the first argument"
     }
 }
