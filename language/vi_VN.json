@@ -82,7 +82,7 @@
         "reconnectWithAnError": "Đã xảy ra lỗi với Listener. AutoReconnect được cho phép, đang bắt đầu kết nối lại...",
         "connected": "Listener đã được kết nối.",
         "disconnected": "Listener bị ngắt kết nối.",
-        "kết nối lại": "Listener đang kết nối lại...",
+        "reconnect": "Listener đang kết nối lại...",
         "notLoggedIn": "Đã xảy ra lỗi với Listener, vui lòng kiểm tra lại tài khoản."
     },
     "logout": {
