@@ -20,10 +20,11 @@ function checkUpdate(allowUpdate) {
             var { body } = await request.get('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
             var { version: newestVersion } = JSON.parse(body);
             if (versionChecker(version, newestVersion)) {
-                if (!allowUpdate) return resolve(log('Update', Language('system', 'newestVersion'), 'warn'));
-                log('Update', Language('system', 'autoUpdate'), 'warn');
+                if (!allowUpdate) return resolve(log('Update', Language('system', 'newestVersion', newestVersion), 'warn'));
+                log('Update', Language('system', 'autoUpdate', newestVersion), 'warn');
                 var { execSync } = require('child_process');
-                resolve(execSync('npm install @hoahenry/meta-api --save'));
+                execSync('npm install @hoahenry/meta-api --save');
+                resolve(log('Update', Language('system', 'updated')));
             }
         } catch (error) {
             return reject(error);
@@ -35,7 +36,7 @@ async function login({ cookies, email, password, configs, language }, callback) 
     if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
     Language.setLanguage(language || client.language);
     if (configs) setConfigs(configs);
-    if (client.configs.checkUpdate) await checkUpdate(client.configs.allowUpdate);
+    if (client.configs.checkUpdate) await checkUpdate(client.configs.autoUpdate);
     if (cookies) {
         log('Login', Language('system', 'loginWithCookies'), 'magenta');
         if (!Array.isArray(cookies)) return callback(Language('system', 'cookiesError'));
