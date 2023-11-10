@@ -1,6 +1,8 @@
 module.exports = {
     language: 'en_US',
     configs: {
+        checkUpdate: false,
+        autoUpdate: false,
         selfListen: false,
         selfListenEvents: false,
         listenEvents: true,

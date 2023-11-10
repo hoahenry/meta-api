@@ -12,25 +12,30 @@ function setConfigs(configs) {
     clientConfigProperties.filter(item => allowedProperties.includes(item)).forEach(item => client.configs[item] = configs[item]);
 }
 
-async function checkUpdate(allowUpdate) {
-    var { version } = require('./package.json');
-    var { lt: versionChecker } = require('semver');
-    var { body } = await request.get('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
-    var { version: newestVersion } = JSON.parse(body);
-    if (versionChecker(version, newestVersion)) {
-        log('Update', Language('system', 'newestVersion'), 'warn');
-        if (allowUpdate) {
-            log('Update', Language('system', 'autoUpdate'), 'warn');
-            var { execSync } = require('child_process');
-            execSync('npm install @hoahenry/meta-api --save');
+function checkUpdate(allowUpdate) {
+    return new Promise(async function(resolve, reject) {
+        try {
+            var { version } = require('./package.json');
+            var { lt: versionChecker } = require('semver');
+            var { body } = await request.get('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
+            var { version: newestVersion } = JSON.parse(body);
+            if (versionChecker(version, newestVersion)) {
+                if (!allowUpdate) return resolve(log('Update', Language('system', 'newestVersion'), 'warn'));
+                log('Update', Language('system', 'autoUpdate'), 'warn');
+                var { execSync } = require('child_process');
+                resolve(execSync('npm install @hoahenry/meta-api --save'));
+            }
+        } catch (error) {
+            return reject(error);
         }
-    }
+    })
 }
 
 async function login({ cookies, email, password, configs, language }, callback) {
     if (!callback || !Function.isFunction(callback)) callback = utils.makeCallback();
     Language.setLanguage(language || client.language);
     if (configs) setConfigs(configs);
+    if (client.configs.checkUpdate) await checkUpdate(client.configs.allowUpdate);
     if (cookies) {
         log('Login', Language('system', 'loginWithCookies'), 'magenta');
         if (!Array.isArray(cookies)) return callback(Language('system', 'cookiesError'));
@@ -106,5 +111,6 @@ async function login({ cookies, email, password, configs, language }, callback) 
 
 module.exports = Object.assign(login, {
     login,
+    setConfigs,
     checkUpdate
 })
