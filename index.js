@@ -12,20 +12,19 @@ function setConfigs(configs) {
     clientConfigProperties.filter(item => allowedProperties.includes(item)).forEach(item => client.configs[item] = configs[item]);
 }
 
-function checkUpdate(allowUpdate) {
+function checkUpdate(autoUpdate) {
     return new Promise(async function(resolve, reject) {
         try {
             var { version } = require('./package.json');
             var { lt: versionChecker } = require('semver');
             var { body } = await request.get('https://raw.githubusercontent.com/hoahenry/meta-api/main/package.json');
             var { version: newestVersion } = JSON.parse(body);
-            if (versionChecker(version, newestVersion)) {
-                if (!allowUpdate) return resolve(log('Update', Language('system', 'newestVersion', newestVersion), 'warn'));
-                log('Update', Language('system', 'autoUpdate', newestVersion), 'warn');
-                var { execSync } = require('child_process');
-                execSync('npm install @hoahenry/meta-api --save');
-                resolve(log('Update', Language('system', 'updated')));
-            }
+            if (!versionChecker(version, newestVersion)) return resolve();
+            if (!autoUpdate) return resolve(log('Update', Language('system', 'newestVersion', newestVersion), 'warn'));
+            log('Update', Language('system', 'autoUpdate', newestVersion), 'warn');
+            var { execSync } = require('child_process');
+            execSync('npm install @hoahenry/meta-api --save');
+            resolve(log('Update', Language('system', 'updated')));
         } catch (error) {
             return reject(error);
         }
@@ -79,12 +78,12 @@ async function login({ cookies, email, password, configs, language }, callback) 
                 formData.name_action_selected = 'dont_save';
                 var { body } = await request.post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData);
                 // There are still some things I can't do here, such as: review recent logins, check checkpoints...
-                // If you get the same error, please push an issue to https://github.com/hoahenry/meta-plus/issues
+                // If you get the same error, please push an issue to https://github.com/hoahenry/meta-api/issues
             } else {
                 log('Login', Language('system', 'verifiedWithBrowser'), 'magenta');
                 var { body } = await request.post('https://www.facebook.com/checkpoint/?next=https%3A%2F%2Fwww.facebook.com%2Fhome.php', formData, { headers: { Referer: headers.location } });
                 // There are still some things I can't do here, such as: review recent logins, check checkpoints...
-                // If you get the same error, please push an issue to https://github.com/hoahenry/meta-plus/issues
+                // If you get the same error, please push an issue to https://github.com/hoahenry/meta-api/issues
             }
         }
     }
