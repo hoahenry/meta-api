@@ -40,7 +40,7 @@ async function login({ cookies, email, password, configs, language }, callback) 
         }
     } else {
         log('Login', Language('system', 'loginWithEmailAndPassword'), 'magenta');
-        var { body } = await request('https://www.facebook.com/login');
+        var { body } = await request('https://m.facebook.com/login');
         var $ = cheerio.load(body), arrayForm = [], formData = {};
         $('#login_form input').map((key, value) => arrayForm.push({ name: $(value).attr('name'), value: $(value).val() }));
         for (let i of arrayForm) if (i.value) formData[i.name] = i.value;

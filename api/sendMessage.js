@@ -12,8 +12,8 @@ module.exports = function({ browser, client, utils, Language }) {
                     upload_1024: item
                 }
                 let response = await browser.postFormData('https://upload.facebook.com/ajax/mercury/upload.php', formData);
-                if (!response) throw new Error(Language('sendMessage', 'failedUploadAttachment'));
-                if (response.error) throw new Error(response);
+                if (!response) throw Language('sendMessage', 'failedUploadAttachment');
+                if (response.error) throw response;
                 return response.payload.metadata.shift();
             });
 
@@ -136,9 +136,7 @@ module.exports = function({ browser, client, utils, Language }) {
             if (!Array.isArray(message.attachments)) message.attachments = [message.attachments];
             return uploadAttachments(message.attachments, (error, files) => {
                 if (error) return callback(error, null);
-                console.log(files)
                 files.forEach(function(file, index) {
-                    console.log(file)
                     let key = Object.keys(file);
                     let type = key[0];
                     if (!form[type + "s"]) form[type + "s"] = [];
