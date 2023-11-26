@@ -79,7 +79,13 @@ module.exports = function ({ request, browser, utils, client, api, log, Language
         });
 
         client.mqtt.on('connect', function () {
+            const topics = [
+                '/thread_typing',
+                '/orca_typing_notifications',
+            ];
             client.mqtt.subscribe('#');
+            topics.forEach(t => client.mqtt.subscribe(t));
+            
             var queue = {
                 sync_api_version: 10,
                 max_deltas_able_to_process: 1000,
