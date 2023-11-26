@@ -9,7 +9,7 @@ module.exports = function({ browser, utils, Language }) {
         let response = await browser.post('https://www.facebook.com/ajax/messaging/attachments/sharedphotos.php', form);
         if (!response) return callback(Language('getPictures', 'failedGetPicture'));
         if (response.error) return callback(response);
-        let obj = response.payload.map(async function(image) {
+        let obj = response.payload.imagesData.map(async function(image) {
             let res = await browser.post('https://www.facebook.com/ajax/messaging/attachments/sharedphotos.php', form);
             if (!res) return callback(Language('getPictures', 'failedGetPicture'));
             if (res.error) return callback(response);
