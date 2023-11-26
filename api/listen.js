@@ -1,5 +1,26 @@
 const mqtt = require('mqtt');
 const ws = require('websocket-stream');
+var topics = [
+    "/t_ms",
+    "/thread_typing",
+    "/orca_typing_notifications",
+    "/orca_presence",
+    "/legacy_web",
+    "/br_sr",
+    "/sr_res",
+    "/webrtc",
+    "/onevc",
+    "/notify_disconnect",
+    "/inbox",
+    "/mercury",
+    "/messaging_events",
+    "/orca_message_notifications",
+    "/pp",
+    "/webrtc_response",
+    "/legacy_web_mtouch",
+    "/set_client_settings",
+    "/messenger_sync_create_queue"
+];
 
 module.exports = function ({ request, browser, utils, client, api, log, Language }) {
     async function getSeqID(callback) {
@@ -79,7 +100,7 @@ module.exports = function ({ request, browser, utils, client, api, log, Language
         });
 
         client.mqtt.on('connect', function () {
-            client.mqtt.subscribe('#');
+            topics.forEach(topic => client.mqtt.subscribe(topic));
             var queue = {
                 sync_api_version: 10,
                 max_deltas_able_to_process: 1000,
