@@ -14,7 +14,7 @@ module.exports = function({ browser, client, utils, Language }) {
                 let response = await browser.postFormData('https://upload.facebook.com/ajax/mercury/upload.php', formData);
                 if (!response) throw Language('sendMessage', 'failedUploadAttachment');
                 if (response.error) throw response;
-                return response.payload.metadata.shift();
+                return response.payload.metadata[0];
             });
 
             let results = await Promise.all(uploads);
