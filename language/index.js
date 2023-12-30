@@ -9,7 +9,7 @@ function formatRegionToLanguageName(region) {
 }
 
 module.exports = function({ client, log }) {
-    var locale = client.language, data = {}, dirName = __dirname + '/', defaultLanguage;
+    var locale = client.language, data = {}, dirName = __dirname + '/';
 
     function get(region, key, ...item) {
         if (!data[region]) return get('system', 'notFoundRegion', region, formatRegionToLanguageName(locale));
